@@ -4,25 +4,23 @@ local UIS = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- CONFIGURACION
-local BLUE = Color3.fromRGB(65, 165, 255)
-local DARK = Color3.fromRGB(5, 7, 20)
-local BUTTON = Color3.fromRGB(23, 58, 91)
+local BLUE = Color3.fromRGB(45, 160, 255)
+local DARK = Color3.fromRGB(9, 12, 23)
+local PANEL = Color3.fromRGB(19, 35, 58)
 
--- LIMPIAR VERSION ANTERIOR
 local old = playerGui:FindFirstChild("REAL_KATIO_HUB")
 if old then old:Destroy() end
 
--- GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "REAL_KATIO_HUB"
 gui.ResetOnSpawn = false
+gui.DisplayOrder = 100
 gui.Parent = playerGui
 
 -- BOTON FLOTANTE
 local open = Instance.new("TextButton")
-open.Size = UDim2.fromOffset(54, 54)
-open.Position = UDim2.new(0, 20, 0.4, 0)
+open.Size = UDim2.fromOffset(52, 52)
+open.Position = UDim2.new(0, 18, 0.4, 0)
 open.Text = "K"
 open.TextSize = 27
 open.Font = Enum.Font.GothamBold
@@ -33,218 +31,217 @@ open.Parent = gui
 Instance.new("UICorner", open).CornerRadius =
     UDim.new(1, 0)
 
-local openStroke = Instance.new("UIStroke")
-openStroke.Color = BLUE
-openStroke.Thickness = 2
-openStroke.Parent = open
+local os = Instance.new("UIStroke", open)
+os.Color = BLUE
+os.Thickness = 2
 
--- MENU PRINCIPAL
+-- VENTANA
 local main = Instance.new("Frame")
-main.Name = "Main"
-main.Size = UDim2.new(0.86, 0, 0.72, 0)
-main.Position = UDim2.new(0.07, 0, 0.14, 0)
+main.Size = UDim2.fromOffset(390, 330)
+main.Position = UDim2.new(0.5, -195, 0.5, -165)
 main.BackgroundColor3 = DARK
 main.Visible = false
 main.ClipsDescendants = true
 main.Parent = gui
 
 Instance.new("UICorner", main).CornerRadius =
-    UDim.new(0, 14)
+    UDim.new(0, 13)
 
-local stroke = Instance.new("UIStroke")
-stroke.Color = BLUE
-stroke.Thickness = 2
-stroke.Parent = main
+local border = Instance.new("UIStroke", main)
+border.Color = BLUE
+border.Thickness = 2
 
-local limit = Instance.new("UISizeConstraint")
-limit.MinSize = Vector2.new(300, 270)
-limit.MaxSize = Vector2.new(650, 500)
-limit.Parent = main
+-- FONDO: coloca aquí el ID de tu imagen
+local bg = Instance.new("ImageLabel")
+bg.Size = UDim2.fromScale(1, 1)
+bg.BackgroundTransparency = 1
+bg.Image = "rbxassetid://0"
+bg.ScaleType = Enum.ScaleType.Crop
+bg.Parent = main
 
--- FONDO
-local background = Instance.new("ImageLabel")
-background.Name = "Background"
-background.Size = UDim2.fromScale(1, 1)
-background.BackgroundTransparency = 1
-background.Image = "rbxassetid://0"
-background.ScaleType = Enum.ScaleType.Crop
-background.ZIndex = 1
-background.Parent = main
-
--- CAPA OSCURA
 local shade = Instance.new("Frame")
 shade.Size = UDim2.fromScale(1, 1)
 shade.BackgroundColor3 = DARK
-shade.BackgroundTransparency = 0.24
-shade.BorderSizePixel = 0
-shade.ZIndex = 2
+shade.BackgroundTransparency = 0.22
 shade.Parent = main
 
--- TITULO
+-- ENCABEZADO
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -65, 0, 55)
-title.Position = UDim2.fromOffset(10, 5)
+title.Size = UDim2.new(1, -55, 0, 48)
+title.Position = UDim2.fromOffset(12, 3)
 title.BackgroundTransparency = 1
 title.Text = "REAL KATIO HUB"
 title.TextColor3 = BLUE
-title.TextSize = 24
 title.Font = Enum.Font.GothamBold
-title.ZIndex = 4
+title.TextSize = 23
+title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = shade
 
--- CERRAR
 local close = Instance.new("TextButton")
-close.Size = UDim2.fromOffset(42, 42)
-close.Position = UDim2.new(1, -52, 0, 10)
+close.Size = UDim2.fromOffset(36, 36)
+close.Position = UDim2.new(1, -44, 0, 8)
 close.Text = "X"
-close.TextColor3 = Color3.new(1,1,1)
-close.TextSize = 20
-close.BackgroundColor3 = Color3.fromRGB(35,35,50)
-close.ZIndex = 5
+close.TextColor3 = Color3.new(1, 1, 1)
+close.BackgroundColor3 = PANEL
+close.Font = Enum.Font.GothamBold
+close.TextSize = 18
 close.Parent = shade
 
 Instance.new("UICorner", close).CornerRadius =
     UDim.new(0, 7)
 
 -- BARRA DE PESTAÑAS
-local tabBar = Instance.new("Frame")
-tabBar.Size = UDim2.new(1, -24, 0, 48)
-tabBar.Position = UDim2.fromOffset(12, 68)
-tabBar.BackgroundTransparency = 1
-tabBar.ZIndex = 4
-tabBar.Parent = shade
+local bar = Instance.new("Frame")
+bar.Size = UDim2.new(1, -20, 0, 42)
+bar.Position = UDim2.fromOffset(10, 55)
+bar.BackgroundTransparency = 1
+bar.Parent = shade
 
-local tabLayout = Instance.new("UIListLayout")
-tabLayout.FillDirection = Enum.FillDirection.Horizontal
-tabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-tabLayout.Padding = UDim.new(0, 8)
-tabLayout.Parent = tabBar
+local barLayout = Instance.new("UIListLayout")
+barLayout.FillDirection = Enum.FillDirection.Horizontal
+barLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+barLayout.Padding = UDim.new(0, 7)
+barLayout.Parent = bar
 
--- AREA DE CONTENIDO
+-- CONTENIDO
 local content = Instance.new("Frame")
-content.Size = UDim2.new(1, -24, 1, -130)
-content.Position = UDim2.fromOffset(12, 122)
-content.BackgroundColor3 = Color3.fromRGB(9, 13, 28)
-content.BackgroundTransparency = 0.15
-content.BorderSizePixel = 0
-content.ZIndex = 3
+content.Size = UDim2.new(1, -20, 1, -110)
+content.Position = UDim2.fromOffset(10, 103)
+content.BackgroundColor3 = DARK
+content.BackgroundTransparency = 0.12
 content.Parent = shade
 
 Instance.new("UICorner", content).CornerRadius =
     UDim.new(0, 9)
 
--- CREAR PAGINAS
 local pages = {}
 local tabButtons = {}
 
-local function createPage(name)
+local function makePage(name)
     local page = Instance.new("ScrollingFrame")
     page.Name = name
     page.Size = UDim2.fromScale(1, 1)
     page.BackgroundTransparency = 1
     page.BorderSizePixel = 0
-    page.ScrollBarThickness = 4
+    page.ScrollBarThickness = 3
     page.AutomaticCanvasSize = Enum.AutomaticSize.Y
     page.CanvasSize = UDim2.new()
     page.Visible = false
-    page.ZIndex = 4
     page.Parent = content
 
     local padding = Instance.new("UIPadding")
     padding.PaddingTop = UDim.new(0, 12)
-    padding.PaddingLeft = UDim.new(0, 12)
-    padding.PaddingRight = UDim.new(0, 12)
-    padding.PaddingBottom = UDim.new(0, 12)
+    padding.PaddingLeft = UDim.new(0, 10)
+    padding.PaddingRight = UDim.new(0, 10)
     padding.Parent = page
 
     local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 9)
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Padding = UDim.new(0, 8)
     layout.Parent = page
 
     pages[name] = page
     return page
 end
 
--- TEXTOS DE CADA PAGINA
-local function addText(page, text)
+local function addLabel(page, message)
     local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -5, 0, 45)
-    label.BackgroundColor3 = BUTTON
-    label.Text = text
-    label.TextColor3 = Color3.new(1,1,1)
-    label.TextSize = 14
+    label.Size = UDim2.new(1, -5, 0, 38)
+    label.BackgroundTransparency = 1
+    label.Text = message
+    label.TextColor3 = Color3.new(1, 1, 1)
     label.Font = Enum.Font.GothamBold
-    label.TextWrapped = true
-    label.ZIndex = 5
+    label.TextSize = 14
     label.Parent = page
-
-    Instance.new("UICorner", label).CornerRadius =
-        UDim.new(0, 7)
-
     return label
 end
 
--- PAGINAS
-local localPage = createPage("LOCAL")
-local exploitsPage = createPage("EXPLOITS")
-local playersPage = createPage("PLAYERS")
+local function addToggle(page, message)
+    local active = false
 
--- LOCAL
-addText(localPage, "BIENVENIDO A REAL KATIO HUB")
-addText(localPage, "CREADOR: REAL KATIO")
-addText(localPage, "YOUTUBE: @RealKatioScripts")
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -5, 0, 42)
+    button.BackgroundColor3 = PANEL
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 14
+    button.Parent = page
+
+    Instance.new("UICorner", button).CornerRadius =
+        UDim.new(0, 7)
+
+    local function refresh()
+        button.Text = message .. (active and "   [ON]" or "   [OFF]")
+        button.BackgroundColor3 = active and
+            Color3.fromRGB(20, 95, 145) or PANEL
+    end
+
+    button.Activated:Connect(function()
+        active = not active
+        refresh()
+    end)
+
+    refresh()
+    return button
+end
+
+-- PAGINAS
+local home = makePage("HOME")
+local exploits = makePage("EXPLOITS")
+local playersPage = makePage("PLAYERS")
+
+-- HOME
+addLabel(home, "BIENVENIDO A REAL KATIO HUB")
+addLabel(home, "CREADOR: REAL KATIO")
+addLabel(home, "YOUTUBE: @RealKatioScripts")
 
 -- EXPLOITS
-addText(exploitsPage, "MECANICAS DE TU EXPERIENCIA")
-addText(exploitsPage, "Aquí puedes integrar funciones autorizadas de tu propio juego.")
-addText(exploitsPage, "Las acciones de personaje necesitan implementación en el juego.")
+addLabel(exploits, "CONTROLES VISUALES")
+addToggle(exploits, "Efecto de brillo")
+addToggle(exploits, "Borde azul")
+addToggle(exploits, "Fondo oscuro")
 
 -- PLAYERS
-addText(playersPage, "PANEL DE JUGADORES")
-addText(playersPage, "FOV VISUAL")
-addText(playersPage, "PRACTICA CON NPCs")
+addLabel(playersPage, "HERRAMIENTAS DE PRACTICA")
+addToggle(playersPage, "Círculo FOV visual")
+addToggle(playersPage, "Indicadores de NPC")
 
--- CAMBIAR DE PESTAÑA
-local function selectTab(name)
+-- NAVEGACION
+local function selectPage(name)
     for tab, page in pairs(pages) do
-        page.Visible = (tab == name)
+        page.Visible = tab == name
     end
 
     for tab, button in pairs(tabButtons) do
         button.BackgroundColor3 =
-            tab == name and BLUE or BUTTON
+            tab == name and BLUE or PANEL
     end
 end
 
--- CREAR BOTONES
-local function createTab(name)
+local function addTab(name)
     local button = Instance.new("TextButton")
-    button.Name = name
-    button.Size = UDim2.new(1/3, -8, 1, 0)
+    button.Size = UDim2.new(1/3, -5, 1, 0)
     button.Text = name
-    button.TextColor3 = Color3.new(1,1,1)
-    button.TextSize = 13
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.BackgroundColor3 = PANEL
     button.Font = Enum.Font.GothamBold
-    button.BackgroundColor3 = BUTTON
-    button.ZIndex = 5
-    button.Parent = tabBar
+    button.TextSize = 12
+    button.Parent = bar
 
     Instance.new("UICorner", button).CornerRadius =
-        UDim.new(0, 8)
+        UDim.new(0, 7)
 
     tabButtons[name] = button
 
     button.Activated:Connect(function()
-        selectTab(name)
+        selectPage(name)
     end)
 end
 
-createTab("LOCAL")
-createTab("EXPLOITS")
-createTab("PLAYERS")
+addTab("HOME")
+addTab("EXPLOITS")
+addTab("PLAYERS")
 
-selectTab("LOCAL")
+selectPage("HOME")
 
 -- ABRIR Y CERRAR
 open.Activated:Connect(function()
@@ -255,18 +252,17 @@ close.Activated:Connect(function()
     main.Visible = false
 end)
 
--- ARRASTRAR CON MOUSE O DEDO
+-- ARRASTRAR
 local dragging = false
 local dragStart
-local startPosition
+local initialPosition
 
 title.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1
     or input.UserInputType == Enum.UserInputType.Touch then
-
         dragging = true
         dragStart = input.Position
-        startPosition = main.Position
+        initialPosition = main.Position
     end
 end)
 
@@ -276,12 +272,11 @@ UIS.InputChanged:Connect(function(input)
         or input.UserInputType == Enum.UserInputType.Touch
     ) then
         local delta = input.Position - dragStart
-
         main.Position = UDim2.new(
-            startPosition.X.Scale,
-            startPosition.X.Offset + delta.X,
-            startPosition.Y.Scale,
-            startPosition.Y.Offset + delta.Y
+            initialPosition.X.Scale,
+            initialPosition.X.Offset + delta.X,
+            initialPosition.Y.Scale,
+            initialPosition.Y.Offset + delta.Y
         )
     end
 end)
@@ -293,304 +288,4 @@ UIS.InputEnded:Connect(function(input)
     end
 end)
 
-print("REAL KATIO HUB V3 LOADED")
---========================================
---          REAL KATIO HUB V3
---========================================
-
-local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
-
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-
--- CONFIGURACION
-local BLUE = Color3.fromRGB(65, 165, 255)
-local DARK = Color3.fromRGB(5, 7, 20)
-local BUTTON = Color3.fromRGB(23, 58, 91)
-
--- LIMPIAR VERSION ANTERIOR
-local old = playerGui:FindFirstChild("REAL_KATIO_HUB")
-if old then old:Destroy() end
-
--- GUI
-local gui = Instance.new("ScreenGui")
-gui.Name = "REAL_KATIO_HUB"
-gui.ResetOnSpawn = false
-gui.Parent = playerGui
-
--- BOTON FLOTANTE
-local open = Instance.new("TextButton")
-open.Size = UDim2.fromOffset(54, 54)
-open.Position = UDim2.new(0, 20, 0.4, 0)
-open.Text = "K"
-open.TextSize = 27
-open.Font = Enum.Font.GothamBold
-open.TextColor3 = BLUE
-open.BackgroundColor3 = DARK
-open.Parent = gui
-
-Instance.new("UICorner", open).CornerRadius =
-    UDim.new(1, 0)
-
-local openStroke = Instance.new("UIStroke")
-openStroke.Color = BLUE
-openStroke.Thickness = 2
-openStroke.Parent = open
-
--- MENU PRINCIPAL
-local main = Instance.new("Frame")
-main.Name = "Main"
-main.Size = UDim2.new(0.86, 0, 0.72, 0)
-main.Position = UDim2.new(0.07, 0, 0.14, 0)
-main.BackgroundColor3 = DARK
-main.Visible = false
-main.ClipsDescendants = true
-main.Parent = gui
-
-Instance.new("UICorner", main).CornerRadius =
-    UDim.new(0, 14)
-
-local stroke = Instance.new("UIStroke")
-stroke.Color = BLUE
-stroke.Thickness = 2
-stroke.Parent = main
-
-local limit = Instance.new("UISizeConstraint")
-limit.MinSize = Vector2.new(300, 270)
-limit.MaxSize = Vector2.new(650, 500)
-limit.Parent = main
-
--- FONDO
-local background = Instance.new("ImageLabel")
-background.Name = "Background"
-background.Size = UDim2.fromScale(1, 1)
-background.BackgroundTransparency = 1
-background.Image = "rbxassetid://0"
-background.ScaleType = Enum.ScaleType.Crop
-background.ZIndex = 1
-background.Parent = main
-
--- CAPA OSCURA
-local shade = Instance.new("Frame")
-shade.Size = UDim2.fromScale(1, 1)
-shade.BackgroundColor3 = DARK
-shade.BackgroundTransparency = 0.24
-shade.BorderSizePixel = 0
-shade.ZIndex = 2
-shade.Parent = main
-
--- TITULO
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -65, 0, 55)
-title.Position = UDim2.fromOffset(10, 5)
-title.BackgroundTransparency = 1
-title.Text = "REAL KATIO HUB"
-title.TextColor3 = BLUE
-title.TextSize = 24
-title.Font = Enum.Font.GothamBold
-title.ZIndex = 4
-title.Parent = shade
-
--- CERRAR
-local close = Instance.new("TextButton")
-close.Size = UDim2.fromOffset(42, 42)
-close.Position = UDim2.new(1, -52, 0, 10)
-close.Text = "X"
-close.TextColor3 = Color3.new(1,1,1)
-close.TextSize = 20
-close.BackgroundColor3 = Color3.fromRGB(35,35,50)
-close.ZIndex = 5
-close.Parent = shade
-
-Instance.new("UICorner", close).CornerRadius =
-    UDim.new(0, 7)
-
--- BARRA DE PESTAÑAS
-local tabBar = Instance.new("Frame")
-tabBar.Size = UDim2.new(1, -24, 0, 48)
-tabBar.Position = UDim2.fromOffset(12, 68)
-tabBar.BackgroundTransparency = 1
-tabBar.ZIndex = 4
-tabBar.Parent = shade
-
-local tabLayout = Instance.new("UIListLayout")
-tabLayout.FillDirection = Enum.FillDirection.Horizontal
-tabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-tabLayout.Padding = UDim.new(0, 8)
-tabLayout.Parent = tabBar
-
--- AREA DE CONTENIDO
-local content = Instance.new("Frame")
-content.Size = UDim2.new(1, -24, 1, -130)
-content.Position = UDim2.fromOffset(12, 122)
-content.BackgroundColor3 = Color3.fromRGB(9, 13, 28)
-content.BackgroundTransparency = 0.15
-content.BorderSizePixel = 0
-content.ZIndex = 3
-content.Parent = shade
-
-Instance.new("UICorner", content).CornerRadius =
-    UDim.new(0, 9)
-
--- CREAR PAGINAS
-local pages = {}
-local tabButtons = {}
-
-local function createPage(name)
-    local page = Instance.new("ScrollingFrame")
-    page.Name = name
-    page.Size = UDim2.fromScale(1, 1)
-    page.BackgroundTransparency = 1
-    page.BorderSizePixel = 0
-    page.ScrollBarThickness = 4
-    page.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    page.CanvasSize = UDim2.new()
-    page.Visible = false
-    page.ZIndex = 4
-    page.Parent = content
-
-    local padding = Instance.new("UIPadding")
-    padding.PaddingTop = UDim.new(0, 12)
-    padding.PaddingLeft = UDim.new(0, 12)
-    padding.PaddingRight = UDim.new(0, 12)
-    padding.PaddingBottom = UDim.new(0, 12)
-    padding.Parent = page
-
-    local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 9)
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Parent = page
-
-    pages[name] = page
-    return page
-end
-
--- TEXTOS DE CADA PAGINA
-local function addText(page, text)
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -5, 0, 45)
-    label.BackgroundColor3 = BUTTON
-    label.Text = text
-    label.TextColor3 = Color3.new(1,1,1)
-    label.TextSize = 14
-    label.Font = Enum.Font.GothamBold
-    label.TextWrapped = true
-    label.ZIndex = 5
-    label.Parent = page
-
-    Instance.new("UICorner", label).CornerRadius =
-        UDim.new(0, 7)
-
-    return label
-end
-
--- PAGINAS
-local localPage = createPage("LOCAL")
-local exploitsPage = createPage("EXPLOITS")
-local playersPage = createPage("PLAYERS")
-
--- LOCAL
-addText(localPage, "BIENVENIDO A REAL KATIO HUB")
-addText(localPage, "CREADOR: REAL KATIO")
-addText(localPage, "YOUTUBE: @RealKatioScripts")
-
--- EXPLOITS
-addText(exploitsPage, "MECANICAS DE TU EXPERIENCIA")
-addText(exploitsPage, "Aquí puedes integrar funciones autorizadas de tu propio juego.")
-addText(exploitsPage, "Las acciones de personaje necesitan implementación en el juego.")
-
--- PLAYERS
-addText(playersPage, "PANEL DE JUGADORES")
-addText(playersPage, "FOV VISUAL")
-addText(playersPage, "PRACTICA CON NPCs")
-
--- CAMBIAR DE PESTAÑA
-local function selectTab(name)
-    for tab, page in pairs(pages) do
-        page.Visible = (tab == name)
-    end
-
-    for tab, button in pairs(tabButtons) do
-        button.BackgroundColor3 =
-            tab == name and BLUE or BUTTON
-    end
-end
-
--- CREAR BOTONES
-local function createTab(name)
-    local button = Instance.new("TextButton")
-    button.Name = name
-    button.Size = UDim2.new(1/3, -8, 1, 0)
-    button.Text = name
-    button.TextColor3 = Color3.new(1,1,1)
-    button.TextSize = 13
-    button.Font = Enum.Font.GothamBold
-    button.BackgroundColor3 = BUTTON
-    button.ZIndex = 5
-    button.Parent = tabBar
-
-    Instance.new("UICorner", button).CornerRadius =
-        UDim.new(0, 8)
-
-    tabButtons[name] = button
-
-    button.Activated:Connect(function()
-        selectTab(name)
-    end)
-end
-
-createTab("LOCAL")
-createTab("EXPLOITS")
-createTab("PLAYERS")
-
-selectTab("LOCAL")
-
--- ABRIR Y CERRAR
-open.Activated:Connect(function()
-    main.Visible = not main.Visible
-end)
-
-close.Activated:Connect(function()
-    main.Visible = false
-end)
-
--- ARRASTRAR CON MOUSE O DEDO
-local dragging = false
-local dragStart
-local startPosition
-
-title.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-    or input.UserInputType == Enum.UserInputType.Touch then
-
-        dragging = true
-        dragStart = input.Position
-        startPosition = main.Position
-    end
-end)
-
-UIS.InputChanged:Connect(function(input)
-    if dragging and (
-        input.UserInputType == Enum.UserInputType.MouseMovement
-        or input.UserInputType == Enum.UserInputType.Touch
-    ) then
-        local delta = input.Position - dragStart
-
-        main.Position = UDim2.new(
-            startPosition.X.Scale,
-            startPosition.X.Offset + delta.X,
-            startPosition.Y.Scale,
-            startPosition.Y.Offset + delta.Y
-        )
-    end
-end)
-
-UIS.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-    or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false
-    end
-end)
-
-print("REAL KATIO HUB V1 LOADED")
+print("REAL KATIO HUB V1 READY")
