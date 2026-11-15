@@ -1,19 +1,19 @@
-
 --========================================
 --          REAL KATIO HUB V1
 --========================================
 
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
+-- KEY ORIGINAL: SIN CAMBIOS
 local CorrectKey = "KATIOHUBV1FREE"
 local KeyLink = "https://link-center.net/10742409/nKwAHWLgNMDo"
 
--- Imagen alojada externamente.
--- Roblox puede requerir un asset ID propio.
 local BackgroundURL =
 "https://i.ibb.co/TDG2zyD1/file-0000000030a481f5816bb8331a7b033d.png"
 
@@ -65,10 +65,7 @@ local function Button(parent,text)
     return b
 end
 
---========================================
 -- KEY SYSTEM
---========================================
-
 local KeyFrame = Instance.new("Frame")
 KeyFrame.Parent = Gui
 KeyFrame.Size = UDim2.fromOffset(340,250)
@@ -110,24 +107,19 @@ GetKey.MouseButton1Click:Connect(function()
     Status.Text = "KEY LINK: " .. KeyLink
 end)
 
---========================================
 -- MAIN MENU
---========================================
-
 local function LoadHub()
-
     KeyFrame:Destroy()
 
     local Main = Instance.new("Frame")
     Main.Parent = Gui
-    Main.Size = UDim2.new(.88,0,.72,0)
-    Main.Position = UDim2.new(.06,0,.14,0)
+    Main.Size = UDim2.new(.88,0,.62,0)
+    Main.Position = UDim2.new(.06,0,.19,0)
     Main.BackgroundColor3 = Dark
     Main.ClipsDescendants = true
     Corner(Main,15)
     Border(Main)
 
-    -- IMAGE BACKGROUND
     local Background = Instance.new("ImageLabel")
     Background.Parent = Main
     Background.Size = UDim2.new(1,0,1,0)
@@ -141,16 +133,44 @@ local function LoadHub()
     Shade.BackgroundColor3 = Dark
     Shade.BackgroundTransparency = .25
 
-    -- HEADER
     local Header = Instance.new("Frame")
     Header.Parent = Main
     Header.Size = UDim2.new(1,0,0,50)
     Header.BackgroundColor3 = Dark
     Header.BackgroundTransparency = .15
 
-    local Title = Label(Header,"KATIO 🔓",23)
+    local Title = Label(Header,"KATIO | HUB V1",23)
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Position = UDim2.new(0,12,0,5)
+
+    -- BOTÓN FLOTANTE K
+    local Reopen = Instance.new("TextButton")
+    Reopen.Parent = Gui
+    Reopen.Size = UDim2.fromOffset(58,58)
+    Reopen.Position = UDim2.new(0,15,.5,-29)
+    Reopen.BackgroundColor3 = Dark
+    Reopen.Text = "K"
+    Reopen.TextColor3 = Cyan
+    Reopen.Font = Enum.Font.GothamBlack
+    Reopen.TextSize = 30
+    Reopen.Visible = false
+    Corner(Reopen,50)
+    Border(Reopen)
+
+    local Abrir = Instance.new("TextLabel")
+    Abrir.Parent = Reopen
+    Abrir.BackgroundTransparency = 1
+    Abrir.Size = UDim2.new(1,0,0,15)
+    Abrir.Position = UDim2.new(0,0,1,-16)
+    Abrir.Text = "ABRIR"
+    Abrir.TextColor3 = White
+    Abrir.Font = Enum.Font.GothamBold
+    Abrir.TextSize = 8
+
+    Reopen.MouseButton1Click:Connect(function()
+        Main.Visible = true
+        Reopen.Visible = false
+    end)
 
     local Close = Instance.new("TextButton")
     Close.Parent = Header
@@ -163,10 +183,10 @@ local function LoadHub()
     Corner(Close,8)
 
     Close.MouseButton1Click:Connect(function()
-        Gui:Destroy()
+        Main.Visible = false
+        Reopen.Visible = true
     end)
 
-    -- SIDEBAR
     local Side = Instance.new("Frame")
     Side.Parent = Main
     Side.Position = UDim2.new(0,8,0,58)
@@ -185,7 +205,6 @@ local function LoadHub()
     SidePadding.PaddingLeft = UDim.new(0,6)
     SidePadding.PaddingRight = UDim.new(0,6)
 
-    -- CONTENT
     local Content = Instance.new("ScrollingFrame")
     Content.Parent = Main
     Content.Position = UDim2.new(0,128,0,58)
@@ -232,7 +251,6 @@ local function LoadHub()
         return b
     end
 
-    -- MOVEMENT
     local function Movement()
         Clear()
         Section("MOVEMENT")
@@ -272,23 +290,119 @@ local function LoadHub()
         end)
     end
 
-    -- VISUALS
+    local function PlayerOptions()
+        Clear()
+        Section("PLAYER OPTIONS")
+
+        local flying = false
+        local flyConnection
+        local bodyVelocity
+        local bodyGyro
+
+        Option("FLY: OFF",function(button)
+            flying = not flying
+            button.Text = flying and "FLY: ON" or "FLY: OFF"
+
+            local character = Player.Character
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            local hum = character and character:FindFirstChildOfClass("Humanoid")
+
+            if not root or not hum then
+                flying = false
+                button.Text = "FLY: OFF"
+                return
+            end
+
+            if flying then
+                bodyVelocity = Instance.new("BodyVelocity")
+                bodyVelocity.MaxForce = Vector3.new(1e5,1e5,1e5)
+                bodyVelocity.Velocity = Vector3.zero
+                bodyVelocity.Parent = root
+
+                bodyGyro = Instance.new("BodyGyro")
+                bodyGyro.MaxTorque = Vector3.new(1e5,1e5,1e5)
+                bodyGyro.P = 1e4
+                bodyGyro.Parent = root
+
+                flyConnection = RunService.RenderStepped:Connect(function()
+                    if not flying or not root.Parent then return end
+
+                    local camera = workspace.CurrentCamera
+                    local direction = Vector3.zero
+
+                    if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                        direction += camera.CFrame.LookVector
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+                        direction -= camera.CFrame.LookVector
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+                        direction += camera.CFrame.RightVector
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+                        direction -= camera.CFrame.RightVector
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+                        direction += Vector3.yAxis
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+                        direction -= Vector3.yAxis
+                    end
+
+                    bodyVelocity.Velocity = direction.Magnitude > 0
+                        and direction.Unit * 50 or Vector3.zero
+                    bodyGyro.CFrame = camera.CFrame
+                end)
+            else
+                if flyConnection then flyConnection:Disconnect() end
+                if bodyVelocity then bodyVelocity:Destroy() end
+                if bodyGyro then bodyGyro:Destroy() end
+            end
+        end)
+
+        local invincible = false
+        Option("INVINCIBLE: OFF",function(button)
+            invincible = not invincible
+            button.Text = invincible and "INVINCIBLE: ON" or "INVINCIBLE: OFF"
+
+            local hum = Player.Character and
+                Player.Character:FindFirstChildOfClass("Humanoid")
+
+            if hum then
+                hum:SetAttribute("KatioInvincibleRequested",invincible)
+                if invincible then
+                    hum.MaxHealth = 1000000
+                    hum.Health = hum.MaxHealth
+                else
+                    hum.MaxHealth = 100
+                    hum.Health = math.min(hum.Health,100)
+                end
+            end
+        end)
+
+        local sp = false
+        Option("SP: OFF",function(button)
+            sp = not sp
+            button.Text = sp and "SP: ON" or "SP: OFF"
+        end)
+    end
+
     local function Visuals()
         Clear()
         Section("VISUALS")
 
         local enabled = false
         local oldBrightness = Lighting.Brightness
+        local fullBrightButton
 
-        Option("FULL BRIGHT: OFF",function()
+        fullBrightButton = Option("FULL BRIGHT: OFF",function()
             enabled = not enabled
             Lighting.Brightness = enabled and 2 or oldBrightness
-            Content:FindFirstChildWhichIsA("TextButton").Text =
+            fullBrightButton.Text =
                 "FULL BRIGHT: " .. (enabled and "ON" or "OFF")
         end)
     end
 
-    -- UTILITY
     local function Utility()
         Clear()
         Section("UTILITY")
@@ -305,11 +419,11 @@ local function LoadHub()
         end)
 
         Option("CLOSE MENU",function()
-            Gui:Destroy()
+            Main.Visible = false
+            Reopen.Visible = true
         end)
     end
 
-    -- COMBAT
     local function Combat()
         Clear()
         Section("COMBAT")
@@ -324,11 +438,13 @@ local function LoadHub()
             Section("WELCOME TO KATIO")
             Section("REAL KATIO HUB V1")
             Option("MOVEMENT",Movement)
+            Option("PLAYER OPTIONS",PlayerOptions)
             Option("VISUALS",Visuals)
             Option("UTILITY",Utility)
         end},
         {"COMBAT",Combat},
         {"MOVEMENT",Movement},
+        {"PLAYER",PlayerOptions},
         {"VISUALS",Visuals},
         {"UTILITY",Utility}
     }
@@ -376,10 +492,6 @@ local function LoadHub()
 
     tabs[1][2]()
 end
-
---========================================
--- UNLOCK
---========================================
 
 Unlock.MouseButton1Click:Connect(function()
     if Input.Text == CorrectKey then
