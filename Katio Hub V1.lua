@@ -1,291 +1,208 @@
-local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
+-- // SAILOR PIECE | ULTRA PREMIUM VERSION //
+local CorrectKey = "lua2026"
+local KeyLink = "https://linkvertise.com/your-link-here"
 
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+-- // 1. ULTRA EYECATCHING CUSTOM KEY UI //
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+local UIStroke = Instance.new("UIStroke")
+local UIGradient = Instance.new("UIGradient")
+local Glow = Instance.new("ImageLabel")
 
-local BLUE = Color3.fromRGB(45, 160, 255)
-local DARK = Color3.fromRGB(9, 12, 23)
-local PANEL = Color3.fromRGB(19, 35, 58)
+ScreenGui.Name = "SailorPiece_PremiumAccess"
+ScreenGui.Parent = game.CoreGui
 
-local old = playerGui:FindFirstChild("REAL_KATIO_HUB")
-if old then old:Destroy() end
+-- Main Frame with Glow Effect
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.Position = UDim2.new(0.5, -180, 0.5, -130)
+MainFrame.Size = UDim2.new(0, 360, 0, 260)
+MainFrame.Active = true
+MainFrame.Draggable = true
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "REAL_KATIO_HUB"
-gui.ResetOnSpawn = false
-gui.DisplayOrder = 100
-gui.Parent = playerGui
+UICorner.CornerRadius = UDim.new(0, 20)
+UICorner.Parent = MainFrame
 
--- BOTON FLOTANTE
-local open = Instance.new("TextButton")
-open.Size = UDim2.fromOffset(52, 52)
-open.Position = UDim2.new(0, 18, 0.4, 0)
-open.Text = "K"
-open.TextSize = 27
-open.Font = Enum.Font.GothamBold
-open.TextColor3 = BLUE
-open.BackgroundColor3 = DARK
-open.Parent = gui
+-- Neon Border
+UIStroke.Parent = MainFrame
+UIStroke.Thickness = 3
+UIStroke.Color = Color3.fromRGB(255, 255, 255)
+UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
-Instance.new("UICorner", open).CornerRadius =
-    UDim.new(1, 0)
+UIGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 255)), -- Cyan
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(170, 0, 255)), -- Purple
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 255))
+}
+UIGradient.Parent = UIStroke
 
-local os = Instance.new("UIStroke", open)
-os.Color = BLUE
-os.Thickness = 2
+-- Title Design
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, 0, 0, 60)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.Text = "KATIO"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 32
+Title.ZIndex = 2
 
--- VENTANA
-local main = Instance.new("Frame")
-main.Size = UDim2.fromOffset(390, 330)
-main.Position = UDim2.new(0.5, -195, 0.5, -165)
-main.BackgroundColor3 = DARK
-main.Visible = false
-main.ClipsDescendants = true
-main.Parent = gui
+local Subtitle = Instance.new("TextLabel", MainFrame)
+Subtitle.Size = UDim2.new(1, 0, 0, 20)
+Subtitle.Position = UDim2.new(0, 0, 0, 50)
+Subtitle.BackgroundTransparency = 1
+Subtitle.Font = Enum.Font.Gotham
+Subtitle.Text = "PREMIUM EXPLOIT SYSTEM"
+Subtitle.TextColor3 = Color3.fromRGB(150, 150, 150)
+Subtitle.TextSize = 12
 
-Instance.new("UICorner", main).CornerRadius =
-    UDim.new(0, 13)
+-- Key Input (Modern Style)
+local KeyInput = Instance.new("TextBox", MainFrame)
+KeyInput.Size = UDim2.new(0.8, 0, 0, 45)
+KeyInput.Position = UDim2.new(0.1, 0, 0.4, 0)
+KeyInput.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+KeyInput.PlaceholderText = "Enter Access Key..."
+KeyInput.Text = ""
+KeyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+KeyInput.Font = Enum.Font.Gotham
+KeyInput.TextSize = 16
+Instance.new("UICorner", KeyInput).CornerRadius = UDim.new(0, 10)
 
-local border = Instance.new("UIStroke", main)
-border.Color = BLUE
-border.Thickness = 2
+-- Buttons Layout
+local GetKeyBtn = Instance.new("TextButton", MainFrame)
+GetKeyBtn.Size = UDim2.new(0.38, 0, 0, 45)
+GetKeyBtn.Position = UDim2.new(0.1, 0, 0.7, 0)
+GetKeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+GetKeyBtn.Text = "GET KEY"
+GetKeyBtn.Font = Enum.Font.GothamBold
+GetKeyBtn.TextColor3 = Color3.fromRGB(0, 255, 255)
+GetKeyBtn.TextSize = 14
+Instance.new("UICorner", GetKeyBtn).CornerRadius = UDim.new(0, 10)
 
--- FONDO: coloca aquí el ID de tu imagen
-local bg = Instance.new("ImageLabel")
-bg.Size = UDim2.fromScale(1, 1)
-bg.BackgroundTransparency = 1
-bg.Image = "rbxassetid://0"
-bg.ScaleType = Enum.ScaleType.Crop
-bg.Parent = main
+local UnlockBtn = Instance.new("TextButton", MainFrame)
+UnlockBtn.Size = UDim2.new(0.38, 0, 0, 45)
+UnlockBtn.Position = UDim2.new(0.52, 0, 0.7, 0)
+UnlockBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
+UnlockBtn.Text = "UNLOCK"
+UnlockBtn.Font = Enum.Font.GothamBold
+UnlockBtn.TextColor3 = Color3.fromRGB(10, 10, 15)
+UnlockBtn.TextSize = 14
+Instance.new("UICorner", UnlockBtn).CornerRadius = UDim.new(0, 10)
 
-local shade = Instance.new("Frame")
-shade.Size = UDim2.fromScale(1, 1)
-shade.BackgroundColor3 = DARK
-shade.BackgroundTransparency = 0.22
-shade.Parent = main
+-- // 2. FUNCTION TO LOAD HUB WITH MAX OPTIONS //
+local function LoadFullHub()
+    local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+    local Window = Rayfield:CreateWindow({
+       Name = "Sailor Piece | Ultimate Hub",
+       LoadingTitle = "Executing Sailor Engine...",
+       LoadingSubtitle = "Welcome, Captain Miguel",
+       ConfigurationSaving = { Enabled = true, FolderName = "SailorPieceV2" }
+    })
 
--- ENCABEZADO
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -55, 0, 48)
-title.Position = UDim2.fromOffset(12, 3)
-title.BackgroundTransparency = 1
-title.Text = "REAL KATIO HUB"
-title.TextColor3 = BLUE
-title.Font = Enum.Font.GothamBold
-title.TextSize = 23
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = shade
+    -- Combat Tab
+    local CombatTab = Window:CreateTab("Combat", 4483362458)
+    CombatTab:CreateToggle({
+       Name = "Kill Aura",
+       CurrentValue = false,
+       Callback = function(v) print("KillAura:", v) end,
+    })
+    CombatTab:CreateToggle({
+       Name = "Auto Clicker",
+       CurrentValue = false,
+       Callback = function(v) print("AutoClicker:", v) end,
+    })
+    CombatTab:CreateSlider({
+        Name = "Hitbox Size",
+        Range = {2, 50},
+        Increment = 1,
+        CurrentValue = 2,
+        Callback = function(v) print("Hitbox:", v) end,
+    })
 
-local close = Instance.new("TextButton")
-close.Size = UDim2.fromOffset(36, 36)
-close.Position = UDim2.new(1, -44, 0, 8)
-close.Text = "X"
-close.TextColor3 = Color3.new(1, 1, 1)
-close.BackgroundColor3 = PANEL
-close.Font = Enum.Font.GothamBold
-close.TextSize = 18
-close.Parent = shade
+    -- Movement Tab
+    local MoveTab = Window:CreateTab("Movement", 4483362458)
+    MoveTab:CreateSlider({
+       Name = "WalkSpeed",
+       Range = {16, 500},
+       Increment = 1,
+       CurrentValue = 16,
+       Callback = function(v) game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v end,
+    })
+    MoveTab:CreateSlider({
+        Name = "Jump Power",
+        Range = {50, 500},
+        Increment = 1,
+        CurrentValue = 50,
+        Callback = function(v) game.Players.LocalPlayer.Character.Humanoid.JumpPower = v end,
+    })
+    MoveTab:CreateToggle({
+       Name = "Fly Mode",
+       CurrentValue = false,
+       Callback = function(v) print("Fly:", v) end,
+    })
 
-Instance.new("UICorner", close).CornerRadius =
-    UDim.new(0, 7)
+    -- Visuals Tab
+    local VisualTab = Window:CreateTab("Visuals", 4483362458)
+    VisualTab:CreateToggle({
+       Name = "ESP Boxes",
+       CurrentValue = false,
+       Callback = function(v) print("ESP:", v) end,
+    })
+    VisualTab:CreateToggle({
+       Name = "Full Bright",
+       CurrentValue = false,
+       Callback = function(v) game:GetService("Lighting").Brightness = 2; game:GetService("Lighting").ClockTime = 14 end,
+    })
 
--- BARRA DE PESTAÑAS
-local bar = Instance.new("Frame")
-bar.Size = UDim2.new(1, -20, 0, 42)
-bar.Position = UDim2.fromOffset(10, 55)
-bar.BackgroundTransparency = 1
-bar.Parent = shade
-
-local barLayout = Instance.new("UIListLayout")
-barLayout.FillDirection = Enum.FillDirection.Horizontal
-barLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-barLayout.Padding = UDim.new(0, 7)
-barLayout.Parent = bar
-
--- CONTENIDO
-local content = Instance.new("Frame")
-content.Size = UDim2.new(1, -20, 1, -110)
-content.Position = UDim2.fromOffset(10, 103)
-content.BackgroundColor3 = DARK
-content.BackgroundTransparency = 0.12
-content.Parent = shade
-
-Instance.new("UICorner", content).CornerRadius =
-    UDim.new(0, 9)
-
-local pages = {}
-local tabButtons = {}
-
-local function makePage(name)
-    local page = Instance.new("ScrollingFrame")
-    page.Name = name
-    page.Size = UDim2.fromScale(1, 1)
-    page.BackgroundTransparency = 1
-    page.BorderSizePixel = 0
-    page.ScrollBarThickness = 3
-    page.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    page.CanvasSize = UDim2.new()
-    page.Visible = false
-    page.Parent = content
-
-    local padding = Instance.new("UIPadding")
-    padding.PaddingTop = UDim.new(0, 12)
-    padding.PaddingLeft = UDim.new(0, 10)
-    padding.PaddingRight = UDim.new(0, 10)
-    padding.Parent = page
-
-    local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 8)
-    layout.Parent = page
-
-    pages[name] = page
-    return page
+    -- Misc Tab
+    local MiscTab = Window:CreateTab("Utility", 4483362458)
+    MiscTab:CreateButton({
+       Name = "Anti-AFK",
+       Callback = function() 
+           local vu = game:GetService("VirtualUser")
+           game:GetService("Players").LocalPlayer.Idled:connect(function()
+               vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+               wait(1)
+               vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+           end)
+       end,
+    })
+    MiscTab:CreateButton({
+        Name = "Rejoin Server",
+        Callback = function() game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer) end,
+    })
+    MiscTab:CreateSection("Performance")
+    MiscTab:CreateButton({
+        Name = "Low Graphics (Boost FPS)",
+        Callback = function() 
+            for _,v in pairs(game:GetDescendants()) do 
+                if v:IsA("BasePart") or v:IsA("Decal") then v.Transparency = 0.5 end 
+            end 
+        end,
+    })
 end
 
-local function addLabel(page, message)
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -5, 0, 38)
-    label.BackgroundTransparency = 1
-    label.Text = message
-    label.TextColor3 = Color3.new(1, 1, 1)
-    label.Font = Enum.Font.GothamBold
-    label.TextSize = 14
-    label.Parent = page
-    return label
-end
-
-local function addToggle(page, message)
-    local active = false
-
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -5, 0, 42)
-    button.BackgroundColor3 = PANEL
-    button.TextColor3 = Color3.new(1, 1, 1)
-    button.Font = Enum.Font.GothamBold
-    button.TextSize = 14
-    button.Parent = page
-
-    Instance.new("UICorner", button).CornerRadius =
-        UDim.new(0, 7)
-
-    local function refresh()
-        button.Text = message .. (active and "   [ON]" or "   [OFF]")
-        button.BackgroundColor3 = active and
-            Color3.fromRGB(20, 95, 145) or PANEL
-    end
-
-    button.Activated:Connect(function()
-        active = not active
-        refresh()
-    end)
-
-    refresh()
-    return button
-end
-
--- PAGINAS
-local home = makePage("HOME")
-local exploits = makePage("EXPLOITS")
-local playersPage = makePage("PLAYERS")
-
--- HOME
-addLabel(home, "BIENVENIDO A REAL KATIO HUB")
-addLabel(home, "CREADOR: REAL KATIO")
-addLabel(home, "YOUTUBE: @RealKatioScripts")
-
--- EXPLOITS
-addLabel(exploits, "CONTROLES VISUALES")
-addToggle(exploits, "Efecto de brillo")
-addToggle(exploits, "Borde azul")
-addToggle(exploits, "Fondo oscuro")
-
--- PLAYERS
-addLabel(playersPage, "HERRAMIENTAS DE PRACTICA")
-addToggle(playersPage, "Círculo FOV visual")
-addToggle(playersPage, "Indicadores de NPC")
-
--- NAVEGACION
-local function selectPage(name)
-    for tab, page in pairs(pages) do
-        page.Visible = tab == name
-    end
-
-    for tab, button in pairs(tabButtons) do
-        button.BackgroundColor3 =
-            tab == name and BLUE or PANEL
-    end
-end
-
-local function addTab(name)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1/3, -5, 1, 0)
-    button.Text = name
-    button.TextColor3 = Color3.new(1, 1, 1)
-    button.BackgroundColor3 = PANEL
-    button.Font = Enum.Font.GothamBold
-    button.TextSize = 12
-    button.Parent = bar
-
-    Instance.new("UICorner", button).CornerRadius =
-        UDim.new(0, 7)
-
-    tabButtons[name] = button
-
-    button.Activated:Connect(function()
-        selectPage(name)
-    end)
-end
-
-addTab("HOME")
-addTab("EXPLOITS")
-addTab("PLAYERS")
-
-selectPage("HOME")
-
--- ABRIR Y CERRAR
-open.Activated:Connect(function()
-    main.Visible = not main.Visible
+-- // 3. BUTTON LOGIC //
+GetKeyBtn.MouseButton1Click:Connect(function()
+    setclipboard(KeyLink)
+    GetKeyBtn.Text = "LINK COPIED!"
+    task.wait(2)
+    GetKeyBtn.Text = "GET KEY"
 end)
 
-close.Activated:Connect(function()
-    main.Visible = false
-end)
-
--- ARRASTRAR
-local dragging = false
-local dragStart
-local initialPosition
-
-title.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-    or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        initialPosition = main.Position
+UnlockBtn.MouseButton1Click:Connect(function()
+    if KeyInput.Text == CorrectKey then
+        UnlockBtn.Text = "AUTHENTICATED!"
+        UnlockBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 100)
+        task.wait(1)
+        ScreenGui:Destroy()
+        LoadFullHub()
+    else
+        UnlockBtn.Text = "INVALID KEY!"
+        UnlockBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        task.wait(1.5)
+        UnlockBtn.Text = "UNLOCK"
+        UnlockBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
     end
 end)
-
-UIS.InputChanged:Connect(function(input)
-    if dragging and (
-        input.UserInputType == Enum.UserInputType.MouseMovement
-        or input.UserInputType == Enum.UserInputType.Touch
-    ) then
-        local delta = input.Position - dragStart
-        main.Position = UDim2.new(
-            initialPosition.X.Scale,
-            initialPosition.X.Offset + delta.X,
-            initialPosition.Y.Scale,
-            initialPosition.Y.Offset + delta.Y
-        )
-    end
-end)
-
-UIS.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-    or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false
-    end
-end)
-
-print("REAL KATIO HUB V1 READY")
