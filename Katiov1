@@ -1,234 +1,366 @@
---================================================
---          KATIO | STEAL • EGG
---              CHILLI STYLE
---================================================
+
+--====================================================
+--             KATIO | HUB • ALL | GAMES
+--                  VERSION 2.0
+--====================================================
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
-local IMAGE_ID = "rbxassetid://TU_ID_DE_IMAGEN"
+-- CONFIGURACION
+local HUB_NAME = "KATIO | HUB • ALL | GAMES"
+local YOUTUBE = "https://www.youtube.com/@RealKatioScripts"
+local CORRECT_KEY = "KATIO-HUB-V1•FREE"
 
-local Purple = Color3.fromRGB(145, 65, 255)
-local Dark = Color3.fromRGB(15, 12, 22)
-local Card = Color3.fromRGB(32, 26, 43)
-local White = Color3.fromRGB(255,255,255)
+-- COLORES
+local PURPLE = Color3.fromRGB(145, 0, 255)
+local NEON = Color3.fromRGB(190, 40, 255)
+local DARK = Color3.fromRGB(9, 5, 16)
+local CARD = Color3.fromRGB(28, 20, 38)
+local WHITE = Color3.fromRGB(255,255,255)
+local GRAY = Color3.fromRGB(180,165,195)
 
+-- GUI
 local Gui = Instance.new("ScreenGui")
-Gui.Name = "KATIO_STEAL_EGG"
+Gui.Name = "KATIO_ALL_GAMES"
 Gui.ResetOnSpawn = false
 Gui.Parent = PlayerGui
 
+local function Corner(obj, radius)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0,radius or 10)
+    c.Parent = obj
+end
+
+local function Stroke(obj, color, thickness)
+    local s = Instance.new("UIStroke")
+    s.Color = color or PURPLE
+    s.Thickness = thickness or 2
+    s.Parent = obj
+end
+
+local function Label(parent,text,size,pos,font,color)
+    local l = Instance.new("TextLabel")
+    l.BackgroundTransparency = 1
+    l.Size = size
+    l.Position = pos
+    l.Text = text
+    l.TextColor3 = color or WHITE
+    l.Font = font or Enum.Font.GothamBold
+    l.TextSize = 14
+    l.Parent = parent
+    return l
+end
+
+local function Button(parent,text,size,pos)
+    local b = Instance.new("TextButton")
+    b.Size = size
+    b.Position = pos
+    b.BackgroundColor3 = CARD
+    b.Text = text
+    b.TextColor3 = WHITE
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 14
+    b.AutoButtonColor = true
+    b.Parent = parent
+    Corner(b,10)
+    Stroke(b,PURPLE,1.5)
+    return b
+end
+
 -- BOTON ABRIR
-local Open = Instance.new("ImageButton")
-Open.Name = "OpenButton"
-Open.Size = UDim2.fromOffset(65,65)
-Open.Position = UDim2.new(0,15,0.5,-32)
-Open.BackgroundColor3 = Purple
-Open.Image = IMAGE_ID
-Open.ScaleType = Enum.ScaleType.Crop
+local Open = Instance.new("TextButton")
+Open.Size = UDim2.fromOffset(76,76)
+Open.Position = UDim2.new(0,15,0.5,-38)
+Open.BackgroundColor3 = DARK
+Open.Text = "♛\nABRIR"
+Open.TextColor3 = WHITE
+Open.TextSize = 19
+Open.Font = Enum.Font.GothamBold
 Open.Parent = Gui
-
-Instance.new("UICorner",Open).CornerRadius = UDim.new(1,0)
-
-local OpenText = Instance.new("TextLabel")
-OpenText.Size = UDim2.new(1,0,0,18)
-OpenText.Position = UDim2.new(0,0,1,2)
-OpenText.BackgroundTransparency = 1
-OpenText.Text = "ABRIR"
-OpenText.TextColor3 = White
-OpenText.TextSize = 11
-OpenText.Font = Enum.Font.GothamBold
-OpenText.Parent = Open
+Corner(Open,18)
+Stroke(Open,NEON,3)
 
 -- PANEL PRINCIPAL
 local Main = Instance.new("Frame")
-Main.Name = "Main"
-Main.Size = UDim2.fromOffset(330,390)
-Main.Position = UDim2.new(0.5,-165,0.5,-195)
-Main.BackgroundColor3 = Dark
-Main.BorderSizePixel = 0
+Main.Size = UDim2.fromOffset(650,440)
+Main.Position = UDim2.new(0.5,-325,0.5,-220)
+Main.BackgroundColor3 = DARK
 Main.Visible = false
 Main.ClipsDescendants = true
 Main.Parent = Gui
+Corner(Main,18)
+Stroke(Main,NEON,3)
 
-Instance.new("UICorner",Main).CornerRadius = UDim.new(0,12)
+-- FONDO DIBUJADO
+local Decoration = Instance.new("Frame")
+Decoration.Size = UDim2.fromScale(1,1)
+Decoration.BackgroundColor3 = DARK
+Decoration.BackgroundTransparency = 0
+Decoration.Parent = Main
+Corner(Decoration,18)
 
-local Border = Instance.new("UIStroke")
-Border.Color = Purple
-Border.Thickness = 2
-Border.Parent = Main
+Label(Decoration,"♛",UDim2.fromOffset(90,80),
+    UDim2.fromOffset(15,65),Enum.Font.GothamBold,NEON)
 
--- FONDO
-local Background = Instance.new("ImageLabel")
-Background.Size = UDim2.fromScale(1,1)
-Background.BackgroundTransparency = 1
-Background.Image = IMAGE_ID
-Background.ScaleType = Enum.ScaleType.Crop
-Background.ImageTransparency = 0.45
-Background.Parent = Main
+Label(Decoration,"✦       ⛓       ✦",
+    UDim2.fromOffset(260,40),
+    UDim2.new(1,-270,1,-45),
+    Enum.Font.GothamBold,NEON)
 
--- CAPA OSCURA
-local Overlay = Instance.new("Frame")
-Overlay.Size = UDim2.fromScale(1,1)
-Overlay.BackgroundColor3 = Dark
-Overlay.BackgroundTransparency = 0.22
-Overlay.BorderSizePixel = 0
-Overlay.Parent = Main
+-- CABECERA
+local Header = Instance.new("Frame")
+Header.Size = UDim2.new(1,0,0,65)
+Header.BackgroundColor3 = Color3.fromRGB(20,10,30)
+Header.Parent = Main
 
--- TITULO
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1,-50,0,45)
-Title.Position = UDim2.fromOffset(12,0)
-Title.BackgroundTransparency = 1
-Title.Text = "KATIO | STEAL • EGG"
-Title.TextColor3 = White
-Title.TextSize = 17
-Title.Font = Enum.Font.GothamBold
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = Overlay
+Label(Header,"♛  "..HUB_NAME,
+    UDim2.new(1,-75,1,0),
+    UDim2.fromOffset(15,0),
+    Enum.Font.GothamBlack,WHITE)
 
--- CERRAR
-local Close = Instance.new("TextButton")
-Close.Size = UDim2.fromOffset(32,30)
-Close.Position = UDim2.new(1,-40,0,7)
-Close.BackgroundColor3 = Purple
-Close.Text = "X"
-Close.TextColor3 = White
-Close.Font = Enum.Font.GothamBold
-Close.TextSize = 15
-Close.Parent = Overlay
+local Close = Button(Header,"X",
+    UDim2.fromOffset(42,42),
+    UDim2.new(1,-52,0,11))
+Close.BackgroundColor3 = PURPLE
 
-Instance.new("UICorner",Close).CornerRadius = UDim.new(0,7)
-
--- LINEA
+-- SEPARADOR
 local Line = Instance.new("Frame")
-Line.Size = UDim2.new(1,-20,0,2)
-Line.Position = UDim2.fromOffset(10,45)
-Line.BackgroundColor3 = Purple
+Line.Size = UDim2.new(1,-20,0,3)
+Line.Position = UDim2.fromOffset(10,65)
+Line.BackgroundColor3 = NEON
 Line.BorderSizePixel = 0
-Line.Parent = Overlay
+Line.Parent = Main
 
--- MENU LATERAL
+-- SIDEBAR
 local Sidebar = Instance.new("Frame")
-Sidebar.Size = UDim2.fromOffset(95,325)
-Sidebar.Position = UDim2.fromOffset(8,55)
-Sidebar.BackgroundColor3 = Dark
-Sidebar.BackgroundTransparency = 0.15
-Sidebar.Parent = Overlay
+Sidebar.Size = UDim2.fromOffset(145,350)
+Sidebar.Position = UDim2.fromOffset(10,80)
+Sidebar.BackgroundColor3 = CARD
+Sidebar.Parent = Main
+Corner(Sidebar,12)
 
-Instance.new("UICorner",Sidebar).CornerRadius = UDim.new(0,8)
-
+-- CONTENIDO
 local Content = Instance.new("Frame")
-Content.Size = UDim2.new(1,-115,1,-65)
-Content.Position = UDim2.fromOffset(108,55)
-Content.BackgroundColor3 = Card
-Content.BackgroundTransparency = 0.1
-Content.Parent = Overlay
+Content.Size = UDim2.new(1,-170,1,-90)
+Content.Position = UDim2.fromOffset(160,80)
+Content.BackgroundColor3 = CARD
+Content.Parent = Main
+Corner(Content,12)
 
-Instance.new("UICorner",Content).CornerRadius = UDim.new(0,8)
-
--- CONTENIDO DE PESTAÑAS
-local Sections = {
-    "HOME",
-    "PLAYER",
-    "SHOP",
-    "SETTINGS"
-}
-
+-- PAGINAS
 local Pages = {}
 
-local function ShowPage(name)
-    for _,page in pairs(Pages) do
-        page.Visible = false
-    end
-    Pages[name].Visible = true
+local function NewPage(name)
+    local page = Instance.new("Frame")
+    page.Size = UDim2.fromScale(1,1)
+    page.BackgroundTransparency = 1
+    page.Visible = false
+    page.Parent = Content
+    Pages[name] = page
+    return page
 end
 
-for i,name in ipairs(Sections) do
+local Home = NewPage("HOME")
+local Exploits = NewPage("EXPLOITS")
+local PlayerPage = NewPage("PLAYER")
 
-    local Tab = Instance.new("TextButton")
-    Tab.Size = UDim2.new(1,-10,0,42)
-    Tab.Position = UDim2.fromOffset(5,5+(i-1)*49)
-    Tab.BackgroundColor3 = Card
-    Tab.Text = name
-    Tab.TextColor3 = White
-    Tab.TextSize = 11
-    Tab.Font = Enum.Font.GothamBold
-    Tab.Parent = Sidebar
+local function Switch(name)
+    for n,p in pairs(Pages) do
+        p.Visible = n == name
+    end
+end
 
-    Instance.new("UICorner",Tab).CornerRadius = UDim.new(0,7)
+-- PESTAÑAS
+local tabNames = {"HOME","EXPLOITS","PLAYER"}
 
-    local Page = Instance.new("Frame")
-    Page.Size = UDim2.fromScale(1,1)
-    Page.BackgroundTransparency = 1
-    Page.Visible = false
-    Page.Parent = Content
-    Pages[name] = Page
+for i,name in ipairs(tabNames) do
+    local tab = Button(
+        Sidebar,
+        name,
+        UDim2.new(1,-14,0,52),
+        UDim2.fromOffset(7,10+(i-1)*62)
+    )
 
-    local Heading = Instance.new("TextLabel")
-    Heading.Size = UDim2.new(1,-15,0,40)
-    Heading.Position = UDim2.fromOffset(10,5)
-    Heading.BackgroundTransparency = 1
-    Heading.Text = name
-    Heading.TextColor3 = White
-    Heading.TextSize = 17
-    Heading.Font = Enum.Font.GothamBold
-    Heading.TextXAlignment = Enum.TextXAlignment.Left
-    Heading.Parent = Page
-
-    Tab.MouseButton1Click:Connect(function()
-        ShowPage(name)
+    tab.MouseButton1Click:Connect(function()
+        Switch(name)
     end)
 end
 
 -- HOME
-local Welcome = Instance.new("TextLabel")
-Welcome.Size = UDim2.new(1,-20,0,90)
-Welcome.Position = UDim2.fromOffset(10,55)
-Welcome.BackgroundTransparency = 1
-Welcome.Text = "WELCOME TO KATIO HUB\nSTEAL • EGG"
-Welcome.TextColor3 = White
-Welcome.TextSize = 16
-Welcome.Font = Enum.Font.GothamBold
-Welcome.Parent = Pages.HOME
+Label(Home,"♛  WELCOME TO KATIO",
+    UDim2.new(1,-20,0,40),
+    UDim2.fromOffset(10,12),
+    Enum.Font.GothamBlack,NEON)
+
+Label(Home,"HUB • ALL GAMES",
+    UDim2.new(1,-20,0,35),
+    UDim2.fromOffset(10,52),
+    Enum.Font.GothamBold,WHITE)
+
+local UserCard = Button(Home,
+    "♟  Usuario: "..Player.Name,
+    UDim2.new(1,-20,0,48),
+    UDim2.fromOffset(10,100))
+
+local Youtube = Button(Home,
+    "▶  MI CANAL DE YOUTUBE",
+    UDim2.new(1,-20,0,48),
+    UDim2.fromOffset(10,157))
+
+Youtube.MouseButton1Click:Connect(function()
+    -- El enlace queda disponible para copiarlo.
+    if typeof(setclipboard) == "function" then
+        setclipboard(YOUTUBE)
+    end
+end)
+
+local KeyTitle = Label(Home,"♢  SYSTEM KEY",
+    UDim2.new(1,-20,0,30),
+    UDim2.fromOffset(10,220),
+    Enum.Font.GothamBold,NEON)
+
+local KeyInput = Instance.new("TextBox")
+KeyInput.Size = UDim2.new(1,-20,0,43)
+KeyInput.Position = UDim2.fromOffset(10,255)
+KeyInput.BackgroundColor3 = DARK
+KeyInput.Text = ""
+KeyInput.PlaceholderText = "Introduce tu SYSTEM KEY"
+KeyInput.PlaceholderColor3 = GRAY
+KeyInput.TextColor3 = WHITE
+KeyInput.TextSize = 13
+KeyInput.Font = Enum.Font.GothamBold
+KeyInput.ClearTextOnFocus = false
+KeyInput.Parent = Home
+Corner(KeyInput,9)
+Stroke(KeyInput,PURPLE,1)
+
+local KeyStatus = Label(Home,"KEY NO ACTIVADA",
+    UDim2.new(1,-20,0,25),
+    UDim2.fromOffset(10,305),
+    Enum.Font.GothamBold,GRAY)
+
+local Activate = Button(Home,"ACTIVAR KEY",
+    UDim2.new(1,-20,0,43),
+    UDim2.fromOffset(10,335))
+Activate.BackgroundColor3 = PURPLE
+
+local KeyUnlocked = false
+
+Activate.MouseButton1Click:Connect(function()
+    if KeyInput.Text == CORRECT_KEY then
+        KeyUnlocked = true
+        KeyStatus.Text = "KEY ACTIVADA ✓"
+        KeyStatus.TextColor3 = Color3.fromRGB(70,255,130)
+    else
+        KeyStatus.Text = "KEY INCORRECTA"
+        KeyStatus.TextColor3 = Color3.fromRGB(255,70,70)
+    end
+end)
+
+-- EXPLOITS: INTERFAZ DE OPCIONES
+Label(Exploits,"⚡ EXPLOITS",
+    UDim2.new(1,-20,0,35),
+    UDim2.fromOffset(10,10),
+    Enum.Font.GothamBlack,NEON)
+
+local function VisualToggle(parent,text,y)
+    local b = Button(parent,text.."   [ OFF ]",
+        UDim2.new(1,-20,0,48),
+        UDim2.fromOffset(10,y))
+
+    local enabled = false
+
+    b.MouseButton1Click:Connect(function()
+        if not KeyUnlocked then
+            b.Text = "ACTIVA SYSTEM KEY PRIMERO"
+            return
+        end
+
+        enabled = not enabled
+        b.Text = text.."   [ "..(enabled and "ON" or "OFF").." ]"
+        b.BackgroundColor3 = enabled and PURPLE or CARD
+    end)
+
+    return b
+end
+
+VisualToggle(Exploits,"SPEED",60)
+VisualToggle(Exploits,"INFINITE JUMP",120)
+VisualToggle(Exploits,"NOCLIP",180)
+
+Label(Exploits,
+    "Opciones visuales para configurar en tu propio juego.",
+    UDim2.new(1,-20,0,55),
+    UDim2.fromOffset(10,250),
+    Enum.Font.Gotham,GRAY)
 
 -- PLAYER
-local PlayerInfo = Instance.new("TextLabel")
-PlayerInfo.Size = UDim2.new(1,-20,0,70)
-PlayerInfo.Position = UDim2.fromOffset(10,55)
-PlayerInfo.BackgroundTransparency = 1
-PlayerInfo.Text = "PLAYER\n"..Player.DisplayName
-PlayerInfo.TextColor3 = White
-PlayerInfo.TextSize = 14
-PlayerInfo.Font = Enum.Font.GothamBold
-PlayerInfo.Parent = Pages.PLAYER
+Label(PlayerPage,"♟ PLAYER",
+    UDim2.new(1,-20,0,35),
+    UDim2.fromOffset(10,10),
+    Enum.Font.GothamBlack,NEON)
 
--- SHOP
-local ShopInfo = Instance.new("TextLabel")
-ShopInfo.Size = UDim2.new(1,-20,0,70)
-ShopInfo.Position = UDim2.fromOffset(10,55)
-ShopInfo.BackgroundTransparency = 1
-ShopInfo.Text = "SHOP\nTienda de tu juego"
-ShopInfo.TextColor3 = White
-ShopInfo.TextSize = 14
-ShopInfo.Font = Enum.Font.GothamBold
-ShopInfo.Parent = Pages.SHOP
+Label(PlayerPage,"Jugador: "..Player.DisplayName,
+    UDim2.new(1,-20,0,35),
+    UDim2.fromOffset(10,55),
+    Enum.Font.GothamBold,WHITE)
 
--- SETTINGS
-local SettingsInfo = Instance.new("TextLabel")
-SettingsInfo.Size = UDim2.new(1,-20,0,70)
-SettingsInfo.Position = UDim2.fromOffset(10,55)
-SettingsInfo.BackgroundTransparency = 1
-SettingsInfo.Text = "SETTINGS\nConfiguración del menú"
-SettingsInfo.TextColor3 = White
-SettingsInfo.TextSize = 14
-SettingsInfo.Font = Enum.Font.GothamBold
-SettingsInfo.Parent = Pages.SETTINGS
+local FlyButton = Button(PlayerPage,"✦ FLY (VENTANA)",
+    UDim2.new(1,-20,0,52),
+    UDim2.fromOffset(10,105))
+FlyButton.BackgroundColor3 = PURPLE
 
--- ABRIR Y CERRAR
+-- VENTANA INDEPENDIENTE FLY
+local FlyWindow = Instance.new("Frame")
+FlyWindow.Size = UDim2.fromOffset(210,145)
+FlyWindow.Position = UDim2.new(0.5,-105,0.5,-72)
+FlyWindow.BackgroundColor3 = DARK
+FlyWindow.Visible = false
+FlyWindow.Parent = Gui
+Corner(FlyWindow,12)
+Stroke(FlyWindow,NEON,2)
+
+Label(FlyWindow,"✦ FLY WINDOW",
+    UDim2.new(1,-40,0,40),
+    UDim2.fromOffset(10,0),
+    Enum.Font.GothamBlack,WHITE)
+
+local FlyClose = Button(FlyWindow,"X",
+    UDim2.fromOffset(28,28),
+    UDim2.new(1,-34,0,5))
+
+local FlyStatus = Label(FlyWindow,"FLY: OFF",
+    UDim2.new(1,-20,0,30),
+    UDim2.fromOffset(10,45),
+    Enum.Font.GothamBold,GRAY)
+
+local FlyToggle = Button(FlyWindow,"ACTIVAR",
+    UDim2.new(1,-20,0,42),
+    UDim2.fromOffset(10,85))
+
+FlyButton.MouseButton1Click:Connect(function()
+    FlyWindow.Visible = not FlyWindow.Visible
+end)
+
+FlyClose.MouseButton1Click:Connect(function()
+    FlyWindow.Visible = false
+end)
+
+FlyToggle.MouseButton1Click:Connect(function()
+    if not KeyUnlocked then
+        FlyStatus.Text = "ACTIVA LA KEY"
+        return
+    end
+
+    FlyStatus.Text = "FLY: CONFIGURACIÓN PENDIENTE"
+end)
+
+-- ABRIR / CERRAR
 Open.MouseButton1Click:Connect(function()
     Main.Visible = true
     Open.Visible = false
@@ -236,46 +368,53 @@ end)
 
 Close.MouseButton1Click:Connect(function()
     Main.Visible = false
+    FlyWindow.Visible = false
     Open.Visible = true
 end)
 
--- ARRASTRAR MENU
-local dragging = false
-local dragStart
-local startPos
+-- ARRASTRAR PANEL
+local function MakeDraggable(frame, handle)
+    local dragging = false
+    local startPos
+    local startInput
 
-Title.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-    or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = Main.Position
-    end
-end)
+    handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            startInput = input.Position
+            startPos = frame.Position
+        end
+    end)
 
-UIS.InputChanged:Connect(function(input)
-    if dragging and (
-        input.UserInputType == Enum.UserInputType.MouseMovement
-        or input.UserInputType == Enum.UserInputType.Touch
-    ) then
-        local delta = input.Position - dragStart
-        Main.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
-        )
-    end
-end)
+    UIS.InputChanged:Connect(function(input)
+        if dragging and (
+            input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch
+        ) then
+            local delta = input.Position - startInput
 
-UIS.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-    or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false
-    end
-end)
+            frame.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
 
--- INICIAR
-ShowPage("HOME")
+    UIS.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+end
 
-print("KATIO | STEAL • EGG LOADED")
+MakeDraggable(Main,Header)
+MakeDraggable(FlyWindow,FlyWindow)
+
+-- INICIO
+Switch("HOME")
+
+print("KATIO HUB ALL GAMES - LOADED")
