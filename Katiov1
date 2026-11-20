@@ -1,203 +1,269 @@
---==================================================
---             KATIO | STEAL • EGG
---             ORIGINAL UI - V1
---==================================================
+--========================================================
+--              KATIO | STEAL • EGG
+--                 UI BASE V1
+--========================================================
 
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
 local UIS = game:GetService("UserInputService")
 
-local player = Players.LocalPlayer
-local gui = Instance.new("ScreenGui")
-gui.Name = "KATIO_STEAL_EGG"
-gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
 
-local BG = Color3.fromRGB(15, 15, 18)
-local PANEL = Color3.fromRGB(23, 23, 28)
-local RED = Color3.fromRGB(235, 65, 75)
+local GUI = Instance.new("ScreenGui")
+GUI.Name = "KATIO_STEAL_EGG"
+GUI.ResetOnSpawn = false
+GUI.IgnoreGuiInset = true
+GUI.Parent = PlayerGui
+
+local BLACK = Color3.fromRGB(15, 15, 17)
+local PANEL = Color3.fromRGB(24, 24, 27)
+local RED = Color3.fromRGB(220, 65, 70)
+local DARKRED = Color3.fromRGB(95, 30, 35)
 local WHITE = Color3.fromRGB(245, 245, 245)
-local GRAY = Color3.fromRGB(145, 145, 155)
+local GRAY = Color3.fromRGB(155, 155, 160)
 
-local function corner(obj, radius)
+local function Corner(obj, radius)
     local c = Instance.new("UICorner")
     c.CornerRadius = UDim.new(0, radius)
     c.Parent = obj
 end
 
-local function stroke(obj, color, thickness)
+local function Outline(obj, color, thickness)
     local s = Instance.new("UIStroke")
     s.Color = color
-    s.Thickness = thickness
+    s.Thickness = thickness or 1
     s.Parent = obj
 end
 
-local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 440, 0, 285)
-main.Position = UDim2.new(0.5, -220, 0.5, -142)
-main.BackgroundColor3 = BG
-main.Parent = gui
-corner(main, 12)
-stroke(main, RED, 1.4)
-
-local scale = Instance.new("UIScale")
-scale.Scale = 0.85
-scale.Parent = main
-
-local header = Instance.new("Frame")
-header.Size = UDim2.new(1, 0, 0, 46)
-header.BackgroundColor3 = PANEL
-header.Parent = main
-corner(header, 12)
-
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -60, 1, 0)
-title.Position = UDim2.new(0, 15, 0, 0)
-title.BackgroundTransparency = 1
-title.Text = "KATIO  |  STEAL • EGG"
-title.TextColor3 = WHITE
-title.Font = Enum.Font.GothamBold
-title.TextSize = 15
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = header
-
-local close = Instance.new("TextButton")
-close.Size = UDim2.new(0, 32, 0, 30)
-close.Position = UDim2.new(1, -39, 0, 8)
-close.BackgroundColor3 = Color3.fromRGB(45, 30, 32)
-close.Text = "×"
-close.TextColor3 = RED
-close.Font = Enum.Font.GothamBold
-close.TextSize = 20
-close.Parent = header
-corner(close, 8)
-
-local sidebar = Instance.new("Frame")
-sidebar.Size = UDim2.new(0, 115, 1, -58)
-sidebar.Position = UDim2.new(0, 10, 0, 52)
-sidebar.BackgroundColor3 = PANEL
-sidebar.Parent = main
-corner(sidebar, 9)
-
-local content = Instance.new("Frame")
-content.Size = UDim2.new(1, -135, 1, -58)
-content.Position = UDim2.new(0, 125, 0, 52)
-content.BackgroundColor3 = PANEL
-content.Parent = main
-corner(content, 9)
-
-local tabs = {}
-local pages = {}
-
-local function createPage(name)
-    local page = Instance.new("Frame")
-    page.Name = name
-    page.Size = UDim2.new(1, -16, 1, -16)
-    page.Position = UDim2.new(0, 8, 0, 8)
-    page.BackgroundTransparency = 1
-    page.Visible = false
-    page.Parent = content
-    pages[name] = page
-    return page
+local function NewButton(parent, text, size, pos)
+    local b = Instance.new("TextButton")
+    b.Size = size
+    b.Position = pos
+    b.BackgroundColor3 = RED
+    b.BorderSizePixel = 0
+    b.Text = text
+    b.TextColor3 = WHITE
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 12
+    b.AutoButtonColor = true
+    b.Parent = parent
+    Corner(b, 5)
+    return b
 end
 
-local function createTab(name, order)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -12, 0, 35)
-    btn.Position = UDim2.new(0, 6, 0, 8 + (order - 1) * 42)
-    btn.BackgroundColor3 = BG
-    btn.Text = name
-    btn.TextColor3 = GRAY
-    btn.TextSize = 12
-    btn.Font = Enum.Font.GothamBold
-    btn.Parent = sidebar
-    corner(btn, 7)
-    tabs[name] = btn
-    return btn
+-- MAIN PANEL
+local Main = Instance.new("Frame")
+Main.Name = "Main"
+Main.Size = UDim2.new(0, 410, 0, 250)
+Main.Position = UDim2.new(0.5, -205, 0.5, -125)
+Main.BackgroundColor3 = BLACK
+Main.BorderSizePixel = 0
+Main.Parent = GUI
+Corner(Main, 8)
+Outline(Main, RED, 1)
+
+-- TOP BAR
+local Top = Instance.new("Frame")
+Top.Size = UDim2.new(1, 0, 0, 37)
+Top.BackgroundColor3 = PANEL
+Top.BorderSizePixel = 0
+Top.Parent = Main
+Corner(Top, 8)
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -45, 1, 0)
+Title.Position = UDim2.new(0, 12, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "KATIO | STEAL • EGG"
+Title.TextColor3 = WHITE
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 13
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Top
+
+local Close = NewButton(Top, "X",
+    UDim2.new(0, 30, 0, 27),
+    UDim2.new(1, -35, 0, 5))
+
+Close.BackgroundColor3 = DARKRED
+
+-- CENTRAL PANEL
+local Center = Instance.new("Frame")
+Center.Size = UDim2.new(0, 205, 1, -48)
+Center.Position = UDim2.new(0.5, -102, 0, 43)
+Center.BackgroundColor3 = PANEL
+Center.BorderSizePixel = 0
+Center.Parent = Main
+Corner(Center, 7)
+
+-- CENTRAL HEADER
+local CenterTitle = Instance.new("TextLabel")
+CenterTitle.Size = UDim2.new(1, -10, 0, 25)
+CenterTitle.Position = UDim2.new(0, 5, 0, 3)
+CenterTitle.BackgroundTransparency = 1
+CenterTitle.Text = "KATIO MENU"
+CenterTitle.TextColor3 = RED
+CenterTitle.Font = Enum.Font.GothamBold
+CenterTitle.TextSize = 12
+CenterTitle.Parent = Center
+
+-- EMPTY OPTIONS
+local OptionHolder = Instance.new("Frame")
+OptionHolder.Size = UDim2.new(1, -12, 1, -34)
+OptionHolder.Position = UDim2.new(0, 6, 0, 31)
+OptionHolder.BackgroundTransparency = 1
+OptionHolder.Parent = Center
+
+local OptionLayout = Instance.new("UIListLayout")
+OptionLayout.Padding = UDim.new(0, 5)
+OptionLayout.SortOrder = Enum.SortOrder.LayoutOrder
+OptionLayout.Parent = OptionHolder
+
+local function CreateOption(text)
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, 26)
+    row.BackgroundColor3 = BLACK
+    row.BorderSizePixel = 0
+    row.Parent = OptionHolder
+    Corner(row, 4)
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -28, 1, 0)
+    label.Position = UDim2.new(0, 8, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = WHITE
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 11
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = row
+
+    local arrow = Instance.new("TextLabel")
+    arrow.Size = UDim2.new(0, 20, 1, 0)
+    arrow.Position = UDim2.new(1, -22, 0, 0)
+    arrow.BackgroundTransparency = 1
+    arrow.Text = "▼"
+    arrow.TextColor3 = GRAY
+    arrow.TextSize = 9
+    arrow.Parent = row
+
+    return row
 end
 
-local home = createPage("Home")
-local settings = createPage("Settings")
-local info = createPage("Info")
+-- PLACEHOLDERS FOR LATER
+CreateOption("Option 1")
+CreateOption("Option 2")
+CreateOption("Option 3")
+CreateOption("Option 4")
+CreateOption("Option 5")
+CreateOption("Option 6")
 
-createTab("Home", 1)
-createTab("Settings", 2)
-createTab("Info", 3)
+-- LEFT BUTTONS
+local LeftNames = {
+    "Farm",
+    "Evento",
+    "Jugador",
+    "Predictor",
+    "Server",
+    "Otros",
+}
 
-local function label(parent, text, pos, size, color)
-    local l = Instance.new("TextLabel")
-    l.Size = size
-    l.Position = pos
-    l.BackgroundTransparency = 1
-    l.Text = text
-    l.TextColor3 = color or WHITE
-    l.Font = Enum.Font.GothamBold
-    l.TextSize = 13
-    l.TextXAlignment = Enum.TextXAlignment.Left
-    l.Parent = parent
-    return l
+local LeftHolder = Instance.new("Frame")
+LeftHolder.Size = UDim2.new(0, 85, 1, -48)
+LeftHolder.Position = UDim2.new(0, 7, 0, 43)
+LeftHolder.BackgroundTransparency = 1
+LeftHolder.Parent = Main
+
+local LeftLayout = Instance.new("UIListLayout")
+LeftLayout.Padding = UDim.new(0, 6)
+LeftLayout.Parent = LeftHolder
+
+for _, name in ipairs(LeftNames) do
+    local b = NewButton(
+        LeftHolder,
+        name,
+        UDim2.new(1, 0, 0, 25),
+        UDim2.new()
+    )
+    b.BackgroundColor3 = RED
 end
 
-label(home, "Welcome to KATIO", UDim2.new(0, 5, 0, 8),
-    UDim2.new(1, -10, 0, 28), RED)
+-- RIGHT BUTTONS
+local RightNames = {
+    "Abuse",
+    "Discord",
+    "Venyx",
+    "Atajos",
+    "Ajustes",
+    "Config",
+}
 
-label(home, "STEAL • EGG", UDim2.new(0, 5, 0, 42),
-    UDim2.new(1, -10, 0, 25), WHITE)
+local RightHolder = Instance.new("Frame")
+RightHolder.Size = UDim2.new(0, 85, 1, -48)
+RightHolder.Position = UDim2.new(1, -92, 0, 43)
+RightHolder.BackgroundTransparency = 1
+RightHolder.Parent = Main
 
-label(home, "KATIO custom interface V1", UDim2.new(0, 5, 0, 75),
-    UDim2.new(1, -10, 0, 25), GRAY)
+local RightLayout = Instance.new("UIListLayout")
+RightLayout.Padding = UDim.new(0, 6)
+RightLayout.Parent = RightHolder
 
-label(settings, "SETTINGS", UDim2.new(0, 5, 0, 8),
-    UDim2.new(1, -10, 0, 25), RED)
-
-label(info, "KATIO UI V1", UDim2.new(0, 5, 0, 8),
-    UDim2.new(1, -10, 0, 25), RED)
-
-label(info, "Original interface", UDim2.new(0, 5, 0, 38),
-    UDim2.new(1, -10, 0, 25), WHITE)
-
-local function switchTab(name)
-    for pageName, page in pairs(pages) do
-        page.Visible = (pageName == name)
-    end
-
-    for tabName, btn in pairs(tabs) do
-        btn.BackgroundColor3 = tabName == name and RED or BG
-        btn.TextColor3 = tabName == name and WHITE or GRAY
-    end
+for _, name in ipairs(RightNames) do
+    local b = NewButton(
+        RightHolder,
+        name,
+        UDim2.new(1, 0, 0, 25),
+        UDim2.new()
+    )
+    b.BackgroundColor3 = RED
 end
 
-for name, btn in pairs(tabs) do
-    btn.MouseButton1Click:Connect(function()
-        switchTab(name)
-    end)
-end
+-- CLOSE / REOPEN
+local OpenButton = NewButton(
+    GUI,
+    "KATIO",
+    UDim2.new(0, 70, 0, 32),
+    UDim2.new(0, 15, 0.5, 0)
+)
+OpenButton.Visible = false
+Outline(OpenButton, RED, 1)
 
-switchTab("Home")
+Close.MouseButton1Click:Connect(function()
+    Main.Visible = false
+    OpenButton.Visible = true
+end)
 
--- DRAGGABLE
-local dragging = false
-local dragStart
-local startPos
+OpenButton.MouseButton1Click:Connect(function()
+    Main.Visible = true
+    OpenButton.Visible = false
+end)
 
-header.InputBegan:Connect(function(input)
+-- DRAG WINDOW
+local Dragging = false
+local DragStart
+local StartPosition
+
+Top.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1
     or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = main.Position
+        Dragging = true
+        DragStart = input.Position
+        StartPosition = Main.Position
     end
 end)
 
 UIS.InputChanged:Connect(function(input)
-    if dragging and (
+    if Dragging and (
         input.UserInputType == Enum.UserInputType.MouseMovement
         or input.UserInputType == Enum.UserInputType.Touch
     ) then
-        local delta = input.Position - dragStart
-        main.Position = UDim2.new(
-            startPos.X.Scale, startPos.X.Offset + delta.X,
-            startPos.Y.Scale, startPos.Y.Offset + delta.Y
+        local delta = input.Position - DragStart
+
+        Main.Position = UDim2.new(
+            StartPosition.X.Scale,
+            StartPosition.X.Offset + delta.X,
+            StartPosition.Y.Scale,
+            StartPosition.Y.Offset + delta.Y
         )
     end
 end)
@@ -205,37 +271,8 @@ end)
 UIS.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1
     or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false
+        Dragging = false
     end
 end)
 
--- OPEN / CLOSE
-local opener = Instance.new("TextButton")
-opener.Size = UDim2.new(0, 85, 0, 38)
-opener.Position = UDim2.new(0, 15, 0.5, 140)
-opener.BackgroundColor3 = BG
-opener.Text = "KATIO"
-opener.TextColor3 = RED
-opener.Font = Enum.Font.GothamBold
-opener.TextSize = 13
-opener.Visible = false
-opener.Parent = gui
-corner(opener, 8)
-stroke(opener, RED, 1)
-
-close.MouseButton1Click:Connect(function()
-    main.Visible = false
-    opener.Visible = true
-end)
-
-opener.MouseButton1Click:Connect(function()
-    main.Visible = true
-    opener.Visible = false
-end)
-
--- OPEN ANIMATION
-main.Visible = true
-TweenService:Create(scale, TweenInfo.new(0.22, Enum.EasingStyle.Back),
-    {Scale = 1}):Play()
-
-print("KATIO | STEAL • EGG loaded")
+print("KATIO | STEAL • EGG - UI loaded")
