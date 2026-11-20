@@ -1,445 +1,100 @@
---====================================================
---         KATIO | HUB • ALL | GAMES
---                    V3
---====================================================
+
+--========================================
+-- KATIO HUB V4 - ADMIN SERVER
+--========================================
 
 local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Player = Players.LocalPlayer
-local PlayerGui = Player:WaitForChild("PlayerGui")
+local OWNER_NAME = "MINIDELTAX8"
+local ADMIN_NAME = "Lewis_t480"
 
--- CONFIGURATION
-local HUB_NAME = "KATIO | HUB • ALL | GAMES"
-local CORRECT_KEY = "KATIO-HUB-V1•FREE"
-local KEY_LINK = "https://direct-link.net/10742409/jPsJHBblS7Tu"
-local YOUTUBE = "https://www.youtube.com/@RealKatioScripts"
+local Remote = Instance.new("RemoteEvent")
+Remote.Name = "KATIO_AdminRemote"
+Remote.Parent = ReplicatedStorage
 
--- COLORS
-local PURPLE = Color3.fromRGB(155,35,255)
-local NEON = Color3.fromRGB(195,75,255)
-local DARK = Color3.fromRGB(10,7,16)
-local CARD = Color3.fromRGB(29,20,39)
-local WHITE = Color3.fromRGB(255,255,255)
-local GRAY = Color3.fromRGB(175,160,190)
+local Roles = {}
 
--- GUI
-local Gui = Instance.new("ScreenGui")
-Gui.Name = "KATIO_ALL_GAMES_V3"
-Gui.ResetOnSpawn = false
-Gui.Parent = PlayerGui
-
-local function Corner(obj,r)
-    local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0,r or 10)
-    c.Parent = obj
-end
-
-local function Outline(obj,color,thickness)
-    local s = Instance.new("UIStroke")
-    s.Color = color or PURPLE
-    s.Thickness = thickness or 2
-    s.Parent = obj
-end
-
-local function MakeLabel(parent,text,size,pos,color)
-    local l = Instance.new("TextLabel")
-    l.Size = size
-    l.Position = pos
-    l.BackgroundTransparency = 1
-    l.Text = text
-    l.TextColor3 = color or WHITE
-    l.Font = Enum.Font.GothamBold
-    l.TextSize = 13
-    l.TextWrapped = true
-    l.Parent = parent
-    return l
-end
-
-local function MakeButton(parent,text,size,pos)
-    local b = Instance.new("TextButton")
-    b.Size = size
-    b.Position = pos
-    b.BackgroundColor3 = CARD
-    b.Text = text
-    b.TextColor3 = WHITE
-    b.TextSize = 12
-    b.Font = Enum.Font.GothamBold
-    b.Parent = parent
-    Corner(b,9)
-    Outline(b,PURPLE,1.5)
-    return b
-end
-
---====================================================
--- SYSTEM KEY (FIRST SCREEN)
---====================================================
-
-local KeyScreen = Instance.new("Frame")
-KeyScreen.Size = UDim2.new(0.88,0,0,270)
-KeyScreen.AnchorPoint = Vector2.new(0.5,0.5)
-KeyScreen.Position = UDim2.fromScale(0.5,0.5)
-KeyScreen.BackgroundColor3 = DARK
-KeyScreen.Parent = Gui
-
-Corner(KeyScreen,15)
-Outline(KeyScreen,NEON,3)
-
-MakeLabel(KeyScreen,"♛ KATIO SYSTEM KEY",
-    UDim2.new(1,-20,0,40),
-    UDim2.fromOffset(10,12),NEON)
-
-MakeLabel(KeyScreen,"Introduce tu KEY para entrar",
-    UDim2.new(1,-20,0,30),
-    UDim2.fromOffset(10,55),WHITE)
-
-local KeyInput = Instance.new("TextBox")
-KeyInput.Size = UDim2.new(1,-30,0,42)
-KeyInput.Position = UDim2.fromOffset(15,92)
-KeyInput.BackgroundColor3 = CARD
-KeyInput.PlaceholderText = "ENTER YOUR KEY"
-KeyInput.Text = ""
-KeyInput.TextColor3 = WHITE
-KeyInput.PlaceholderColor3 = GRAY
-KeyInput.Font = Enum.Font.GothamBold
-KeyInput.TextSize = 12
-KeyInput.ClearTextOnFocus = false
-KeyInput.Parent = KeyScreen
-
-Corner(KeyInput,8)
-Outline(KeyInput,PURPLE,1)
-
-local GetKey = MakeButton(KeyScreen,"GET KEY ↗",
-    UDim2.new(1,-30,0,38),
-    UDim2.fromOffset(15,145))
-
-local Verify = MakeButton(KeyScreen,"VERIFY KEY",
-    UDim2.new(1,-30,0,38),
-    UDim2.fromOffset(15,190))
-Verify.BackgroundColor3 = PURPLE
-
-local KeyStatus = MakeLabel(KeyScreen,"WAITING FOR KEY...",
-    UDim2.new(1,-20,0,22),
-    UDim2.fromOffset(10,232),GRAY)
-
-GetKey.MouseButton1Click:Connect(function()
-    KeyInput.Text = KEY_LINK
-    KeyInput:CaptureFocus()
-    KeyStatus.Text = "COPIA EL ENLACE GET KEY"
-end)
-
---====================================================
--- MAIN MENU (HIDDEN UNTIL KEY)
---====================================================
-
-local Main = Instance.new("Frame")
-Main.Name = "MainMenu"
-Main.Size = UDim2.new(0.92,0,0.78,0)
-Main.AnchorPoint = Vector2.new(0.5,0.5)
-Main.Position = UDim2.fromScale(0.5,0.5)
-Main.BackgroundColor3 = DARK
-Main.Visible = false
-Main.ClipsDescendants = true
-Main.Parent = Gui
-
-Corner(Main,14)
-Outline(Main,NEON,2)
-
--- HEADER
-local Header = Instance.new("Frame")
-Header.Size = UDim2.new(1,0,0,48)
-Header.BackgroundColor3 = Color3.fromRGB(20,11,29)
-Header.Parent = Main
-
-MakeLabel(Header,"♛  KATIO | HUB • ALL | GAMES",
-    UDim2.new(1,-55,1,0),
-    UDim2.fromOffset(10,0),WHITE)
-
-local Close = MakeButton(Header,"X",
-    UDim2.fromOffset(34,34),
-    UDim2.new(1,-40,0,7))
-Close.BackgroundColor3 = PURPLE
-
-local Line = Instance.new("Frame")
-Line.Size = UDim2.new(1,0,0,3)
-Line.Position = UDim2.fromOffset(0,48)
-Line.BackgroundColor3 = NEON
-Line.BorderSizePixel = 0
-Line.Parent = Main
-
--- SIDEBAR
-local Sidebar = Instance.new("Frame")
-Sidebar.Size = UDim2.new(0,90,1,-65)
-Sidebar.Position = UDim2.fromOffset(7,56)
-Sidebar.BackgroundColor3 = CARD
-Sidebar.Parent = Main
-Corner(Sidebar,10)
-
--- CONTENT
-local Content = Instance.new("Frame")
-Content.Size = UDim2.new(1,-108,1,-65)
-Content.Position = UDim2.fromOffset(100,56)
-Content.BackgroundColor3 = CARD
-Content.Parent = Main
-Corner(Content,10)
-
--- PAGES
-local Pages = {}
-
-local function CreatePage(name)
-    local page = Instance.new("Frame")
-    page.Name = name
-    page.Size = UDim2.fromScale(1,1)
-    page.BackgroundTransparency = 1
-    page.Visible = false
-    page.Parent = Content
-    Pages[name] = page
-    return page
-end
-
-local Home = CreatePage("HOME")
-local Exploits = CreatePage("EXPLOITS")
-local PlayerPage = CreatePage("PLAYER")
-
-local function ShowPage(name)
-    for n,p in pairs(Pages) do
-        p.Visible = (n == name)
-    end
-end
-
--- TABS
-for i,name in ipairs({"HOME","EXPLOITS","PLAYER"}) do
-    local tab = MakeButton(Sidebar,name,
-        UDim2.new(1,-10,0,43),
-        UDim2.fromOffset(5,8+(i-1)*51))
-
-    tab.MouseButton1Click:Connect(function()
-        ShowPage(name)
-    end)
-end
-
---====================================================
--- HOME
---====================================================
-
-MakeLabel(Home,"♛ WELCOME TO KATIO",
-    UDim2.new(1,-15,0,35),
-    UDim2.fromOffset(8,12),NEON)
-
-MakeLabel(Home,"HUB • ALL GAMES",
-    UDim2.new(1,-15,0,25),
-    UDim2.fromOffset(8,48),WHITE)
-
-MakeLabel(Home,"♟ Usuario: "..Player.DisplayName,
-    UDim2.new(1,-15,0,35),
-    UDim2.fromOffset(8,90),WHITE)
-
-local Youtube = MakeButton(Home,"▶ MI CANAL DE YOUTUBE",
-    UDim2.new(1,-16,0,43),
-    UDim2.fromOffset(8,140))
-
-Youtube.MouseButton1Click:Connect(function()
-    -- Copia el enlace para abrirlo en el navegador.
-    local copyBox = Instance.new("TextBox")
-    copyBox.Text = YOUTUBE
-    copyBox.Size = UDim2.fromOffset(1,1)
-    copyBox.Parent = Gui
-    copyBox:CaptureFocus()
-    copyBox:ReleaseFocus()
-end)
-
-MakeLabel(Home,"♛ KATIO HUB V3",
-    UDim2.new(1,-15,0,30),
-    UDim2.fromOffset(8,200),NEON)
-
---====================================================
--- EXPLOITS
---====================================================
-
-MakeLabel(Exploits,"⚡ EXPLOITS",
-    UDim2.new(1,-15,0,35),
-    UDim2.fromOffset(8,10),NEON)
-
-local function VisualOption(text,y)
-    local enabled = false
-    local b = MakeButton(Exploits,text.."  [ OFF ]",
-        UDim2.new(1,-16,0,43),
-        UDim2.fromOffset(8,y))
-
-    b.MouseButton1Click:Connect(function()
-        enabled = not enabled
-        b.Text = text.."  [ "..(enabled and "ON" or "OFF").." ]"
-        b.BackgroundColor3 = enabled and PURPLE or CARD
-    end)
-end
-
-VisualOption("SPEED",55)
-VisualOption("INFINITE JUMP",108)
-VisualOption("NOCLIP",161)
-
-MakeLabel(Exploits,
-    "Controles visuales. Las mecánicas deben implementarse en tu propio juego.",
-    UDim2.new(1,-16,0,65),
-    UDim2.fromOffset(8,220),GRAY)
-
---====================================================
--- PLAYER
---====================================================
-
-MakeLabel(PlayerPage,"♟ PLAYER",
-    UDim2.new(1,-15,0,35),
-    UDim2.fromOffset(8,10),NEON)
-
-MakeLabel(PlayerPage,"Usuario: "..Player.Name,
-    UDim2.new(1,-15,0,35),
-    UDim2.fromOffset(8,50),WHITE)
-
-local FlyButton = MakeButton(PlayerPage,"✦ FLY WINDOW",
-    UDim2.new(1,-16,0,45),
-    UDim2.fromOffset(8,100))
-
--- FLY WINDOW
-local FlyWindow = Instance.new("Frame")
-FlyWindow.Size = UDim2.new(0.75,0,0,145)
-FlyWindow.AnchorPoint = Vector2.new(0.5,0.5)
-FlyWindow.Position = UDim2.fromScale(0.5,0.5)
-FlyWindow.BackgroundColor3 = DARK
-FlyWindow.Visible = false
-FlyWindow.Parent = Gui
-
-Corner(FlyWindow,12)
-Outline(FlyWindow,NEON,2)
-
-MakeLabel(FlyWindow,"♛ FLY WINDOW",
-    UDim2.new(1,-40,0,35),
-    UDim2.fromOffset(8,5),NEON)
-
-local FlyClose = MakeButton(FlyWindow,"X",
-    UDim2.fromOffset(28,28),
-    UDim2.new(1,-34,0,5))
-
-local FlyStatus = MakeLabel(FlyWindow,"FLY: OFF",
-    UDim2.new(1,-15,0,30),
-    UDim2.fromOffset(8,45),GRAY)
-
-local FlyToggle = MakeButton(FlyWindow,"ACTIVAR FLY",
-    UDim2.new(1,-16,0,40),
-    UDim2.fromOffset(8,85))
-
-FlyButton.MouseButton1Click:Connect(function()
-    FlyWindow.Visible = not FlyWindow.Visible
-end)
-
-FlyClose.MouseButton1Click:Connect(function()
-    FlyWindow.Visible = false
-end)
-
-FlyToggle.MouseButton1Click:Connect(function()
-    FlyStatus.Text = "FLY: MECÁNICA PENDIENTE"
-end)
-
---====================================================
--- OPEN BUTTON
---====================================================
-
-local Open = MakeButton(Gui,"♛\nABRIR",
-    UDim2.fromOffset(62,62),
-    UDim2.new(0,12,0.5,-31))
-Open.Visible = false
-Open.BackgroundColor3 = DARK
-Open.TextSize = 13
-
-Open.MouseButton1Click:Connect(function()
-    Main.Visible = true
-    Open.Visible = false
-end)
-
-Close.MouseButton1Click:Connect(function()
-    Main.Visible = false
-    FlyWindow.Visible = false
-    Open.Visible = true
-end)
-
---====================================================
--- DRAG MENU
---====================================================
-
-local function Drag(frame,handle)
-    local dragging = false
-    local startInput
-    local startPosition
-
-    handle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            startInput = input.Position
-            startPosition = frame.Position
-        end
+local function setupPlayer(player)
+    local success, userId = pcall(function()
+        return Players:GetUserIdFromNameAsync(player.Name)
     end)
 
-    UIS.InputChanged:Connect(function(input)
-        if dragging and (
-            input.UserInputType == Enum.UserInputType.MouseMovement
-            or input.UserInputType == Enum.UserInputType.Touch
-        ) then
-            local delta = input.Position - startInput
+    if not success then return end
 
-            frame.Position = UDim2.new(
-                startPosition.X.Scale,
-                startPosition.X.Offset + delta.X,
-                startPosition.Y.Scale,
-                startPosition.Y.Offset + delta.Y
-            )
-        end
-    end)
-
-    UIS.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-        end
-    end)
-end
-
-Drag(Main,Header)
-Drag(FlyWindow,FlyWindow)
-
---====================================================
--- KEY VERIFICATION
---====================================================
-
-local unlocked = false
-
-local function VerifyKey()
-    if KeyInput.Text == CORRECT_KEY then
-        unlocked = true
-        KeyStatus.Text = "KEY ACCEPTED ✓"
-        KeyStatus.TextColor3 = Color3.fromRGB(70,255,120)
-
-        task.wait(0.5)
-
-        KeyScreen.Visible = false
-        Main.Visible = true
-        ShowPage("HOME")
+    if player.Name:lower() == OWNER_NAME:lower() then
+        Roles[player.UserId] = "OWNER"
+    elseif player.Name:lower() == ADMIN_NAME:lower() then
+        Roles[player.UserId] = "ADMIN"
     else
-        KeyStatus.Text = "INVALID KEY!"
-        KeyStatus.TextColor3 = Color3.fromRGB(255,65,65)
+        Roles[player.UserId] = nil
+    end
+
+    player:SetAttribute("KATIO_Role", Roles[player.UserId] or "USER")
+end
+
+Players.PlayerAdded:Connect(setupPlayer)
+
+for _, player in ipairs(Players:GetPlayers()) do
+    task.spawn(setupPlayer, player)
+end
+
+local function authorized(player)
+    return Roles[player.UserId] == "OWNER"
+        or Roles[player.UserId] == "ADMIN"
+end
+
+local function setSpeed(player, enabled)
+    local humanoid = player.Character
+        and player.Character:FindFirstChildOfClass("Humanoid")
+
+    if humanoid then
+        humanoid.WalkSpeed = enabled and 32 or 16
     end
 end
 
-Verify.MouseButton1Click:Connect(VerifyKey)
+local function setNoclip(player, enabled)
+    local character = player.Character
+    if not character then return end
 
-KeyInput.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        VerifyKey()
+    for _, part in ipairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            if enabled then
+                if part:GetAttribute("KATIO_OldCollision") == nil then
+                    part:SetAttribute("KATIO_OldCollision", part.CanCollide)
+                end
+                part.CanCollide = false
+            else
+                local old = part:GetAttribute("KATIO_OldCollision")
+                if old ~= nil then
+                    part.CanCollide = old
+                    part:SetAttribute("KATIO_OldCollision", nil)
+                end
+            end
+        end
+    end
+end
+
+Remote.OnServerEvent:Connect(function(player, action, enabled)
+    if not authorized(player) then return end
+    if typeof(enabled) ~= "boolean" then return end
+
+    if action == "Speed" then
+        setSpeed(player, enabled)
+
+    elseif action == "NoClip" then
+        setNoclip(player, enabled)
+
+    elseif action == "Fly" then
+        player:SetAttribute("KATIO_FlyEnabled", enabled)
+
+    elseif action == "InfiniteJump" then
+        player:SetAttribute("KATIO_InfiniteJump", enabled)
     end
 end)
 
--- INITIAL STATE
-Main.Visible = false
-Open.Visible = false
-KeyScreen.Visible = true
-FlyWindow.Visible = false
+Players.PlayerRemoving:Connect(function(player)
+    Roles[player.UserId] = nil
+end)
 
-print("KATIO HUB V3 LOADED")
+print("KATIO ADMIN SERVER READY")
