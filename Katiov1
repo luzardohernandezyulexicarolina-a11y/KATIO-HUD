@@ -1,162 +1,194 @@
-
 --====================================================
---             KATIO | HUB • ALL | GAMES
---                  VERSION 2.0
+--         KATIO | HUB • ALL | GAMES
+--                    V3
 --====================================================
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
--- CONFIGURACION
+-- CONFIGURATION
 local HUB_NAME = "KATIO | HUB • ALL | GAMES"
-local YOUTUBE = "https://www.youtube.com/@RealKatioScripts"
 local CORRECT_KEY = "KATIO-HUB-V1•FREE"
+local KEY_LINK = "https://direct-link.net/10742409/jPsJHBblS7Tu"
+local YOUTUBE = "https://www.youtube.com/@RealKatioScripts"
 
--- COLORES
-local PURPLE = Color3.fromRGB(145, 0, 255)
-local NEON = Color3.fromRGB(190, 40, 255)
-local DARK = Color3.fromRGB(9, 5, 16)
-local CARD = Color3.fromRGB(28, 20, 38)
+-- COLORS
+local PURPLE = Color3.fromRGB(155,35,255)
+local NEON = Color3.fromRGB(195,75,255)
+local DARK = Color3.fromRGB(10,7,16)
+local CARD = Color3.fromRGB(29,20,39)
 local WHITE = Color3.fromRGB(255,255,255)
-local GRAY = Color3.fromRGB(180,165,195)
+local GRAY = Color3.fromRGB(175,160,190)
 
 -- GUI
 local Gui = Instance.new("ScreenGui")
-Gui.Name = "KATIO_ALL_GAMES"
+Gui.Name = "KATIO_ALL_GAMES_V3"
 Gui.ResetOnSpawn = false
 Gui.Parent = PlayerGui
 
-local function Corner(obj, radius)
+local function Corner(obj,r)
     local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0,radius or 10)
+    c.CornerRadius = UDim.new(0,r or 10)
     c.Parent = obj
 end
 
-local function Stroke(obj, color, thickness)
+local function Outline(obj,color,thickness)
     local s = Instance.new("UIStroke")
     s.Color = color or PURPLE
     s.Thickness = thickness or 2
     s.Parent = obj
 end
 
-local function Label(parent,text,size,pos,font,color)
+local function MakeLabel(parent,text,size,pos,color)
     local l = Instance.new("TextLabel")
-    l.BackgroundTransparency = 1
     l.Size = size
     l.Position = pos
+    l.BackgroundTransparency = 1
     l.Text = text
     l.TextColor3 = color or WHITE
-    l.Font = font or Enum.Font.GothamBold
-    l.TextSize = 14
+    l.Font = Enum.Font.GothamBold
+    l.TextSize = 13
+    l.TextWrapped = true
     l.Parent = parent
     return l
 end
 
-local function Button(parent,text,size,pos)
+local function MakeButton(parent,text,size,pos)
     local b = Instance.new("TextButton")
     b.Size = size
     b.Position = pos
     b.BackgroundColor3 = CARD
     b.Text = text
     b.TextColor3 = WHITE
+    b.TextSize = 12
     b.Font = Enum.Font.GothamBold
-    b.TextSize = 14
-    b.AutoButtonColor = true
     b.Parent = parent
-    Corner(b,10)
-    Stroke(b,PURPLE,1.5)
+    Corner(b,9)
+    Outline(b,PURPLE,1.5)
     return b
 end
 
--- BOTON ABRIR
-local Open = Instance.new("TextButton")
-Open.Size = UDim2.fromOffset(76,76)
-Open.Position = UDim2.new(0,15,0.5,-38)
-Open.BackgroundColor3 = DARK
-Open.Text = "♛\nABRIR"
-Open.TextColor3 = WHITE
-Open.TextSize = 19
-Open.Font = Enum.Font.GothamBold
-Open.Parent = Gui
-Corner(Open,18)
-Stroke(Open,NEON,3)
+--====================================================
+-- SYSTEM KEY (FIRST SCREEN)
+--====================================================
 
--- PANEL PRINCIPAL
+local KeyScreen = Instance.new("Frame")
+KeyScreen.Size = UDim2.new(0.88,0,0,270)
+KeyScreen.AnchorPoint = Vector2.new(0.5,0.5)
+KeyScreen.Position = UDim2.fromScale(0.5,0.5)
+KeyScreen.BackgroundColor3 = DARK
+KeyScreen.Parent = Gui
+
+Corner(KeyScreen,15)
+Outline(KeyScreen,NEON,3)
+
+MakeLabel(KeyScreen,"♛ KATIO SYSTEM KEY",
+    UDim2.new(1,-20,0,40),
+    UDim2.fromOffset(10,12),NEON)
+
+MakeLabel(KeyScreen,"Introduce tu KEY para entrar",
+    UDim2.new(1,-20,0,30),
+    UDim2.fromOffset(10,55),WHITE)
+
+local KeyInput = Instance.new("TextBox")
+KeyInput.Size = UDim2.new(1,-30,0,42)
+KeyInput.Position = UDim2.fromOffset(15,92)
+KeyInput.BackgroundColor3 = CARD
+KeyInput.PlaceholderText = "ENTER YOUR KEY"
+KeyInput.Text = ""
+KeyInput.TextColor3 = WHITE
+KeyInput.PlaceholderColor3 = GRAY
+KeyInput.Font = Enum.Font.GothamBold
+KeyInput.TextSize = 12
+KeyInput.ClearTextOnFocus = false
+KeyInput.Parent = KeyScreen
+
+Corner(KeyInput,8)
+Outline(KeyInput,PURPLE,1)
+
+local GetKey = MakeButton(KeyScreen,"GET KEY ↗",
+    UDim2.new(1,-30,0,38),
+    UDim2.fromOffset(15,145))
+
+local Verify = MakeButton(KeyScreen,"VERIFY KEY",
+    UDim2.new(1,-30,0,38),
+    UDim2.fromOffset(15,190))
+Verify.BackgroundColor3 = PURPLE
+
+local KeyStatus = MakeLabel(KeyScreen,"WAITING FOR KEY...",
+    UDim2.new(1,-20,0,22),
+    UDim2.fromOffset(10,232),GRAY)
+
+GetKey.MouseButton1Click:Connect(function()
+    KeyInput.Text = KEY_LINK
+    KeyInput:CaptureFocus()
+    KeyStatus.Text = "COPIA EL ENLACE GET KEY"
+end)
+
+--====================================================
+-- MAIN MENU (HIDDEN UNTIL KEY)
+--====================================================
+
 local Main = Instance.new("Frame")
-Main.Size = UDim2.fromOffset(650,440)
-Main.Position = UDim2.new(0.5,-325,0.5,-220)
+Main.Name = "MainMenu"
+Main.Size = UDim2.new(0.92,0,0.78,0)
+Main.AnchorPoint = Vector2.new(0.5,0.5)
+Main.Position = UDim2.fromScale(0.5,0.5)
 Main.BackgroundColor3 = DARK
 Main.Visible = false
 Main.ClipsDescendants = true
 Main.Parent = Gui
-Corner(Main,18)
-Stroke(Main,NEON,3)
 
--- FONDO DIBUJADO
-local Decoration = Instance.new("Frame")
-Decoration.Size = UDim2.fromScale(1,1)
-Decoration.BackgroundColor3 = DARK
-Decoration.BackgroundTransparency = 0
-Decoration.Parent = Main
-Corner(Decoration,18)
+Corner(Main,14)
+Outline(Main,NEON,2)
 
-Label(Decoration,"♛",UDim2.fromOffset(90,80),
-    UDim2.fromOffset(15,65),Enum.Font.GothamBold,NEON)
-
-Label(Decoration,"✦       ⛓       ✦",
-    UDim2.fromOffset(260,40),
-    UDim2.new(1,-270,1,-45),
-    Enum.Font.GothamBold,NEON)
-
--- CABECERA
+-- HEADER
 local Header = Instance.new("Frame")
-Header.Size = UDim2.new(1,0,0,65)
-Header.BackgroundColor3 = Color3.fromRGB(20,10,30)
+Header.Size = UDim2.new(1,0,0,48)
+Header.BackgroundColor3 = Color3.fromRGB(20,11,29)
 Header.Parent = Main
 
-Label(Header,"♛  "..HUB_NAME,
-    UDim2.new(1,-75,1,0),
-    UDim2.fromOffset(15,0),
-    Enum.Font.GothamBlack,WHITE)
+MakeLabel(Header,"♛  KATIO | HUB • ALL | GAMES",
+    UDim2.new(1,-55,1,0),
+    UDim2.fromOffset(10,0),WHITE)
 
-local Close = Button(Header,"X",
-    UDim2.fromOffset(42,42),
-    UDim2.new(1,-52,0,11))
+local Close = MakeButton(Header,"X",
+    UDim2.fromOffset(34,34),
+    UDim2.new(1,-40,0,7))
 Close.BackgroundColor3 = PURPLE
 
--- SEPARADOR
 local Line = Instance.new("Frame")
-Line.Size = UDim2.new(1,-20,0,3)
-Line.Position = UDim2.fromOffset(10,65)
+Line.Size = UDim2.new(1,0,0,3)
+Line.Position = UDim2.fromOffset(0,48)
 Line.BackgroundColor3 = NEON
 Line.BorderSizePixel = 0
 Line.Parent = Main
 
 -- SIDEBAR
 local Sidebar = Instance.new("Frame")
-Sidebar.Size = UDim2.fromOffset(145,350)
-Sidebar.Position = UDim2.fromOffset(10,80)
+Sidebar.Size = UDim2.new(0,90,1,-65)
+Sidebar.Position = UDim2.fromOffset(7,56)
 Sidebar.BackgroundColor3 = CARD
 Sidebar.Parent = Main
-Corner(Sidebar,12)
+Corner(Sidebar,10)
 
--- CONTENIDO
+-- CONTENT
 local Content = Instance.new("Frame")
-Content.Size = UDim2.new(1,-170,1,-90)
-Content.Position = UDim2.fromOffset(160,80)
+Content.Size = UDim2.new(1,-108,1,-65)
+Content.Position = UDim2.fromOffset(100,56)
 Content.BackgroundColor3 = CARD
 Content.Parent = Main
-Corner(Content,12)
+Corner(Content,10)
 
--- PAGINAS
+-- PAGES
 local Pages = {}
 
-local function NewPage(name)
+local function CreatePage(name)
     local page = Instance.new("Frame")
+    page.Name = name
     page.Size = UDim2.fromScale(1,1)
     page.BackgroundTransparency = 1
     page.Visible = false
@@ -165,183 +197,134 @@ local function NewPage(name)
     return page
 end
 
-local Home = NewPage("HOME")
-local Exploits = NewPage("EXPLOITS")
-local PlayerPage = NewPage("PLAYER")
+local Home = CreatePage("HOME")
+local Exploits = CreatePage("EXPLOITS")
+local PlayerPage = CreatePage("PLAYER")
 
-local function Switch(name)
+local function ShowPage(name)
     for n,p in pairs(Pages) do
-        p.Visible = n == name
+        p.Visible = (n == name)
     end
 end
 
--- PESTAÑAS
-local tabNames = {"HOME","EXPLOITS","PLAYER"}
-
-for i,name in ipairs(tabNames) do
-    local tab = Button(
-        Sidebar,
-        name,
-        UDim2.new(1,-14,0,52),
-        UDim2.fromOffset(7,10+(i-1)*62)
-    )
+-- TABS
+for i,name in ipairs({"HOME","EXPLOITS","PLAYER"}) do
+    local tab = MakeButton(Sidebar,name,
+        UDim2.new(1,-10,0,43),
+        UDim2.fromOffset(5,8+(i-1)*51))
 
     tab.MouseButton1Click:Connect(function()
-        Switch(name)
+        ShowPage(name)
     end)
 end
 
+--====================================================
 -- HOME
-Label(Home,"♛  WELCOME TO KATIO",
-    UDim2.new(1,-20,0,40),
-    UDim2.fromOffset(10,12),
-    Enum.Font.GothamBlack,NEON)
+--====================================================
 
-Label(Home,"HUB • ALL GAMES",
-    UDim2.new(1,-20,0,35),
-    UDim2.fromOffset(10,52),
-    Enum.Font.GothamBold,WHITE)
+MakeLabel(Home,"♛ WELCOME TO KATIO",
+    UDim2.new(1,-15,0,35),
+    UDim2.fromOffset(8,12),NEON)
 
-local UserCard = Button(Home,
-    "♟  Usuario: "..Player.Name,
-    UDim2.new(1,-20,0,48),
-    UDim2.fromOffset(10,100))
+MakeLabel(Home,"HUB • ALL GAMES",
+    UDim2.new(1,-15,0,25),
+    UDim2.fromOffset(8,48),WHITE)
 
-local Youtube = Button(Home,
-    "▶  MI CANAL DE YOUTUBE",
-    UDim2.new(1,-20,0,48),
-    UDim2.fromOffset(10,157))
+MakeLabel(Home,"♟ Usuario: "..Player.DisplayName,
+    UDim2.new(1,-15,0,35),
+    UDim2.fromOffset(8,90),WHITE)
+
+local Youtube = MakeButton(Home,"▶ MI CANAL DE YOUTUBE",
+    UDim2.new(1,-16,0,43),
+    UDim2.fromOffset(8,140))
 
 Youtube.MouseButton1Click:Connect(function()
-    -- El enlace queda disponible para copiarlo.
-    if typeof(setclipboard) == "function" then
-        setclipboard(YOUTUBE)
-    end
+    -- Copia el enlace para abrirlo en el navegador.
+    local copyBox = Instance.new("TextBox")
+    copyBox.Text = YOUTUBE
+    copyBox.Size = UDim2.fromOffset(1,1)
+    copyBox.Parent = Gui
+    copyBox:CaptureFocus()
+    copyBox:ReleaseFocus()
 end)
 
-local KeyTitle = Label(Home,"♢  SYSTEM KEY",
-    UDim2.new(1,-20,0,30),
-    UDim2.fromOffset(10,220),
-    Enum.Font.GothamBold,NEON)
+MakeLabel(Home,"♛ KATIO HUB V3",
+    UDim2.new(1,-15,0,30),
+    UDim2.fromOffset(8,200),NEON)
 
-local KeyInput = Instance.new("TextBox")
-KeyInput.Size = UDim2.new(1,-20,0,43)
-KeyInput.Position = UDim2.fromOffset(10,255)
-KeyInput.BackgroundColor3 = DARK
-KeyInput.Text = ""
-KeyInput.PlaceholderText = "Introduce tu SYSTEM KEY"
-KeyInput.PlaceholderColor3 = GRAY
-KeyInput.TextColor3 = WHITE
-KeyInput.TextSize = 13
-KeyInput.Font = Enum.Font.GothamBold
-KeyInput.ClearTextOnFocus = false
-KeyInput.Parent = Home
-Corner(KeyInput,9)
-Stroke(KeyInput,PURPLE,1)
+--====================================================
+-- EXPLOITS
+--====================================================
 
-local KeyStatus = Label(Home,"KEY NO ACTIVADA",
-    UDim2.new(1,-20,0,25),
-    UDim2.fromOffset(10,305),
-    Enum.Font.GothamBold,GRAY)
+MakeLabel(Exploits,"⚡ EXPLOITS",
+    UDim2.new(1,-15,0,35),
+    UDim2.fromOffset(8,10),NEON)
 
-local Activate = Button(Home,"ACTIVAR KEY",
-    UDim2.new(1,-20,0,43),
-    UDim2.fromOffset(10,335))
-Activate.BackgroundColor3 = PURPLE
-
-local KeyUnlocked = false
-
-Activate.MouseButton1Click:Connect(function()
-    if KeyInput.Text == CORRECT_KEY then
-        KeyUnlocked = true
-        KeyStatus.Text = "KEY ACTIVADA ✓"
-        KeyStatus.TextColor3 = Color3.fromRGB(70,255,130)
-    else
-        KeyStatus.Text = "KEY INCORRECTA"
-        KeyStatus.TextColor3 = Color3.fromRGB(255,70,70)
-    end
-end)
-
--- EXPLOITS: INTERFAZ DE OPCIONES
-Label(Exploits,"⚡ EXPLOITS",
-    UDim2.new(1,-20,0,35),
-    UDim2.fromOffset(10,10),
-    Enum.Font.GothamBlack,NEON)
-
-local function VisualToggle(parent,text,y)
-    local b = Button(parent,text.."   [ OFF ]",
-        UDim2.new(1,-20,0,48),
-        UDim2.fromOffset(10,y))
-
+local function VisualOption(text,y)
     local enabled = false
+    local b = MakeButton(Exploits,text.."  [ OFF ]",
+        UDim2.new(1,-16,0,43),
+        UDim2.fromOffset(8,y))
 
     b.MouseButton1Click:Connect(function()
-        if not KeyUnlocked then
-            b.Text = "ACTIVA SYSTEM KEY PRIMERO"
-            return
-        end
-
         enabled = not enabled
-        b.Text = text.."   [ "..(enabled and "ON" or "OFF").." ]"
+        b.Text = text.."  [ "..(enabled and "ON" or "OFF").." ]"
         b.BackgroundColor3 = enabled and PURPLE or CARD
     end)
-
-    return b
 end
 
-VisualToggle(Exploits,"SPEED",60)
-VisualToggle(Exploits,"INFINITE JUMP",120)
-VisualToggle(Exploits,"NOCLIP",180)
+VisualOption("SPEED",55)
+VisualOption("INFINITE JUMP",108)
+VisualOption("NOCLIP",161)
 
-Label(Exploits,
-    "Opciones visuales para configurar en tu propio juego.",
-    UDim2.new(1,-20,0,55),
-    UDim2.fromOffset(10,250),
-    Enum.Font.Gotham,GRAY)
+MakeLabel(Exploits,
+    "Controles visuales. Las mecánicas deben implementarse en tu propio juego.",
+    UDim2.new(1,-16,0,65),
+    UDim2.fromOffset(8,220),GRAY)
 
+--====================================================
 -- PLAYER
-Label(PlayerPage,"♟ PLAYER",
-    UDim2.new(1,-20,0,35),
-    UDim2.fromOffset(10,10),
-    Enum.Font.GothamBlack,NEON)
+--====================================================
 
-Label(PlayerPage,"Jugador: "..Player.DisplayName,
-    UDim2.new(1,-20,0,35),
-    UDim2.fromOffset(10,55),
-    Enum.Font.GothamBold,WHITE)
+MakeLabel(PlayerPage,"♟ PLAYER",
+    UDim2.new(1,-15,0,35),
+    UDim2.fromOffset(8,10),NEON)
 
-local FlyButton = Button(PlayerPage,"✦ FLY (VENTANA)",
-    UDim2.new(1,-20,0,52),
-    UDim2.fromOffset(10,105))
-FlyButton.BackgroundColor3 = PURPLE
+MakeLabel(PlayerPage,"Usuario: "..Player.Name,
+    UDim2.new(1,-15,0,35),
+    UDim2.fromOffset(8,50),WHITE)
 
--- VENTANA INDEPENDIENTE FLY
+local FlyButton = MakeButton(PlayerPage,"✦ FLY WINDOW",
+    UDim2.new(1,-16,0,45),
+    UDim2.fromOffset(8,100))
+
+-- FLY WINDOW
 local FlyWindow = Instance.new("Frame")
-FlyWindow.Size = UDim2.fromOffset(210,145)
-FlyWindow.Position = UDim2.new(0.5,-105,0.5,-72)
+FlyWindow.Size = UDim2.new(0.75,0,0,145)
+FlyWindow.AnchorPoint = Vector2.new(0.5,0.5)
+FlyWindow.Position = UDim2.fromScale(0.5,0.5)
 FlyWindow.BackgroundColor3 = DARK
 FlyWindow.Visible = false
 FlyWindow.Parent = Gui
+
 Corner(FlyWindow,12)
-Stroke(FlyWindow,NEON,2)
+Outline(FlyWindow,NEON,2)
 
-Label(FlyWindow,"✦ FLY WINDOW",
-    UDim2.new(1,-40,0,40),
-    UDim2.fromOffset(10,0),
-    Enum.Font.GothamBlack,WHITE)
+MakeLabel(FlyWindow,"♛ FLY WINDOW",
+    UDim2.new(1,-40,0,35),
+    UDim2.fromOffset(8,5),NEON)
 
-local FlyClose = Button(FlyWindow,"X",
+local FlyClose = MakeButton(FlyWindow,"X",
     UDim2.fromOffset(28,28),
     UDim2.new(1,-34,0,5))
 
-local FlyStatus = Label(FlyWindow,"FLY: OFF",
-    UDim2.new(1,-20,0,30),
-    UDim2.fromOffset(10,45),
-    Enum.Font.GothamBold,GRAY)
+local FlyStatus = MakeLabel(FlyWindow,"FLY: OFF",
+    UDim2.new(1,-15,0,30),
+    UDim2.fromOffset(8,45),GRAY)
 
-local FlyToggle = Button(FlyWindow,"ACTIVAR",
-    UDim2.new(1,-20,0,42),
-    UDim2.fromOffset(10,85))
+local FlyToggle = MakeButton(FlyWindow,"ACTIVAR FLY",
+    UDim2.new(1,-16,0,40),
+    UDim2.fromOffset(8,85))
 
 FlyButton.MouseButton1Click:Connect(function()
     FlyWindow.Visible = not FlyWindow.Visible
@@ -352,15 +335,20 @@ FlyClose.MouseButton1Click:Connect(function()
 end)
 
 FlyToggle.MouseButton1Click:Connect(function()
-    if not KeyUnlocked then
-        FlyStatus.Text = "ACTIVA LA KEY"
-        return
-    end
-
-    FlyStatus.Text = "FLY: CONFIGURACIÓN PENDIENTE"
+    FlyStatus.Text = "FLY: MECÁNICA PENDIENTE"
 end)
 
--- ABRIR / CERRAR
+--====================================================
+-- OPEN BUTTON
+--====================================================
+
+local Open = MakeButton(Gui,"♛\nABRIR",
+    UDim2.fromOffset(62,62),
+    UDim2.new(0,12,0.5,-31))
+Open.Visible = false
+Open.BackgroundColor3 = DARK
+Open.TextSize = 13
+
 Open.MouseButton1Click:Connect(function()
     Main.Visible = true
     Open.Visible = false
@@ -372,18 +360,21 @@ Close.MouseButton1Click:Connect(function()
     Open.Visible = true
 end)
 
--- ARRASTRAR PANEL
-local function MakeDraggable(frame, handle)
+--====================================================
+-- DRAG MENU
+--====================================================
+
+local function Drag(frame,handle)
     local dragging = false
-    local startPos
     local startInput
+    local startPosition
 
     handle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             startInput = input.Position
-            startPos = frame.Position
+            startPosition = frame.Position
         end
     end)
 
@@ -395,10 +386,10 @@ local function MakeDraggable(frame, handle)
             local delta = input.Position - startInput
 
             frame.Position = UDim2.new(
-                startPos.X.Scale,
-                startPos.X.Offset + delta.X,
-                startPos.Y.Scale,
-                startPos.Y.Offset + delta.Y
+                startPosition.X.Scale,
+                startPosition.X.Offset + delta.X,
+                startPosition.Y.Scale,
+                startPosition.Y.Offset + delta.Y
             )
         end
     end)
@@ -411,10 +402,44 @@ local function MakeDraggable(frame, handle)
     end)
 end
 
-MakeDraggable(Main,Header)
-MakeDraggable(FlyWindow,FlyWindow)
+Drag(Main,Header)
+Drag(FlyWindow,FlyWindow)
 
--- INICIO
-Switch("HOME")
+--====================================================
+-- KEY VERIFICATION
+--====================================================
 
-print("KATIO HUB ALL GAMES - LOADED")
+local unlocked = false
+
+local function VerifyKey()
+    if KeyInput.Text == CORRECT_KEY then
+        unlocked = true
+        KeyStatus.Text = "KEY ACCEPTED ✓"
+        KeyStatus.TextColor3 = Color3.fromRGB(70,255,120)
+
+        task.wait(0.5)
+
+        KeyScreen.Visible = false
+        Main.Visible = true
+        ShowPage("HOME")
+    else
+        KeyStatus.Text = "INVALID KEY!"
+        KeyStatus.TextColor3 = Color3.fromRGB(255,65,65)
+    end
+end
+
+Verify.MouseButton1Click:Connect(VerifyKey)
+
+KeyInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        VerifyKey()
+    end
+end)
+
+-- INITIAL STATE
+Main.Visible = false
+Open.Visible = false
+KeyScreen.Visible = true
+FlyWindow.Visible = false
+
+print("KATIO HUB V3 LOADED")
