@@ -1,0 +1,135 @@
+
+--[[
+    REAL | KATIO • V1
+    Steal an Egg
+]]
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "RealKatioV1"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local function createMenu(name, position, size)
+    local frame = Instance.new("Frame")
+    frame.Name = name
+    frame.Size = size
+    frame.Position = position
+    frame.BackgroundColor3 = Color3.fromRGB(23, 20, 32)
+    frame.BorderSizePixel = 0
+    frame.Active = true
+    frame.Draggable = true
+    frame.Parent = gui
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = frame
+
+    return frame
+end
+
+local function createButton(parent, name, position)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -20, 0, 35)
+    button.Position = position
+    button.BackgroundColor3 = Color3.fromRGB(65, 45, 95)
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Text = name .. ": OFF"
+    button.TextSize = 14
+    button.Parent = parent
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 7)
+    corner.Parent = button
+
+    return button
+end
+
+-- MAIN MENU
+local main = createMenu(
+    "MainMenu",
+    UDim2.new(0, 30, 0.3, 0),
+    UDim2.new(0, 220, 0, 155)
+)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 35)
+title.BackgroundTransparency = 1
+title.Text = "REAL | KATIO • V1"
+title.TextColor3 = Color3.fromRGB(190, 140, 255)
+title.TextSize = 16
+title.Parent = main
+
+local autoSteal = createButton(
+    main, "Auto Steal", UDim2.new(0, 10, 0, 45)
+)
+
+local autoEgg = createButton(
+    main, "Auto Grab Egg", UDim2.new(0, 10, 0, 90)
+)
+
+local function toggle(button)
+    local enabled = false
+
+    button.MouseButton1Click:Connect(function()
+        enabled = not enabled
+        button.Text = button.Name .. ": " ..
+            (enabled and "ON" or "OFF")
+        button.BackgroundColor3 = enabled
+            and Color3.fromRGB(40, 130, 85)
+            or Color3.fromRGB(65, 45, 95)
+    end)
+end
+
+toggle(autoSteal)
+toggle(autoEgg)
+
+-- SEPARATE SPEED BOOST MENU
+local speedMenu = createMenu(
+    "SpeedBoostMenu",
+    UDim2.new(0, 270, 0.3, 0),
+    UDim2.new(0, 175, 0, 115)
+)
+
+local speedTitle = Instance.new("TextLabel")
+speedTitle.Size = UDim2.new(1, 0, 0, 30)
+speedTitle.BackgroundTransparency = 1
+speedTitle.Text = "SPEED BOOST"
+speedTitle.TextColor3 = Color3.fromRGB(100, 180, 255)
+speedTitle.TextSize = 16
+speedTitle.Parent = speedMenu
+
+local speedInput = Instance.new("TextBox")
+speedInput.Size = UDim2.new(1, -20, 0, 35)
+speedInput.Position = UDim2.new(0, 10, 0, 40)
+speedInput.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+speedInput.TextColor3 = Color3.new(1, 1, 1)
+speedInput.PlaceholderText = "Speed: 1 - 1000"
+speedInput.Text = "16"
+speedInput.Parent = speedMenu
+
+local speedButton = Instance.new("TextButton")
+speedButton.Size = UDim2.new(1, -20, 0, 25)
+speedButton.Position = UDim2.new(0, 10, 0, 80)
+speedButton.Text = "APPLY SPEED"
+speedButton.TextColor3 = Color3.new(1, 1, 1)
+speedButton.BackgroundColor3 = Color3.fromRGB(50, 90, 150)
+speedButton.Parent = speedMenu
+
+speedButton.MouseButton1Click:Connect(function()
+    local speed = tonumber(speedInput.Text)
+
+    if speed and speed >= 1 and speed <= 1000 then
+        local character = player.Character
+        local humanoid = character and
+            character:FindFirstChildOfClass("Humanoid")
+
+        if humanoid then
+            humanoid.WalkSpeed = speed
+        end
+    end
+end)
+
+print("REAL | KATIO • V1 loaded!")
