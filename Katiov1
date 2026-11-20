@@ -1,270 +1,609 @@
 --==================================================
---             KATIO HUB | SERVER
+--              KATIO HUB | CLIENT
 --==================================================
 
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UIS = game:GetService("UserInputService")
+local RS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
 
-local OWNER_NAME = "MINIDELTAX8"
-local ADMIN_NAME = "Lewis_t480"
+local player = Players.LocalPlayer
+local remote = RS:WaitForChild("KATIO_Remote")
+local gui = Instance.new("ScreenGui")
+gui.Name = "KATIO_HUB"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local CLIENT_KEY = "KATIO-HUB-V1•FREE"
 local OWNER_KEY = "KATIO-GITHUB-OWNERR"
 
-local remote = ReplicatedStorage:FindFirstChild("KATIO_Remote")
-if not remote then
-    remote = Instance.new("RemoteEvent")
-    remote.Name = "KATIO_Remote"
-    remote.Parent = ReplicatedStorage
+local PURPLE = Color3.fromRGB(145, 65, 255)
+local DARK = Color3.fromRGB(17, 14, 24)
+local CARD = Color3.fromRGB(35, 29, 45)
+local WHITE = Color3.fromRGB(255, 255, 255)
+
+local function corner(obj)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 9)
+    c.Parent = obj
 end
 
-local noclip = {}
-local collisionSaved = {}
-local transparencySaved = {}
-local invincible = {}
-local invisible = {}
-local speedSaved = {}
-
-local function getRole(player)
-    if player.Name == OWNER_NAME then return "OWNER" end
-    if player.Name == ADMIN_NAME then return "ADMIN" end
-    return "USER"
+local function outline(obj)
+    local s = Instance.new("UIStroke")
+    s.Color = PURPLE
+    s.Thickness = 1.5
+    s.Parent = obj
 end
 
-local function isStaff(player)
-    return getRole(player) ~= "USER"
+local function label(parent, text, size, pos, fontSize)
+    local l = Instance.new("TextLabel")
+    l.Parent = parent
+    l.BackgroundTransparency = 1
+    l.Size = size
+    l.Position = pos
+    l.Text = text
+    l.TextColor3 = WHITE
+    l.Font = Enum.Font.GothamBold
+    l.TextSize = fontSize or 14
+    l.TextWrapped = true
+    return l
 end
 
-local function getHumanoid(player)
-    local character = player.Character
-    return character and character:FindFirstChildOfClass("Humanoid")
+local function button(parent, text, size, pos)
+    local b = Instance.new("TextButton")
+    b.Parent = parent
+    b.Size = size
+    b.Position = pos
+    b.BackgroundColor3 = CARD
+    b.Text = text
+    b.TextColor3 = WHITE
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 13
+    b.AutoButtonColor = true
+    corner(b)
+    outline(b)
+    return b
 end
 
-local function applyNoclip(player, enabled)
-    local character = player.Character
-    if not character then return end
-
-    noclip[player] = enabled
-    collisionSaved[player] = collisionSaved[player] or {}
-
-    if enabled then
-        for _, part in ipairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                if collisionSaved[player][part] == nil then
-                    collisionSaved[player][part] = part.CanCollide
-                end
-                part.CanCollide = false
-            end
-        end
-    else
-        for part, oldValue in pairs(collisionSaved[player]) do
-            if part and part.Parent then
-                part.CanCollide = oldValue
-            end
-        end
-        collisionSaved[player] = {}
-    end
+local function textbox(parent, hint, size, pos)
+    local t = Instance.new("TextBox")
+    t.Parent = parent
+    t.Size = size
+    t.Position = pos
+    t.BackgroundColor3 = CARD
+    t.TextColor3 = WHITE
+    t.PlaceholderColor3 = Color3.fromRGB(180, 170, 190)
+    t.PlaceholderText = hint
+    t.Font = Enum.Font.Gotham
+    t.TextSize = 14
+    t.ClearTextOnFocus = false
+    corner(t)
+    outline(t)
+    return t
 end
 
-local function applyInvisible(player, enabled)
-    local character = player.Character
-    if not character then return end
+local function draggable(frame, handle)
+    local dragging = false
+    local startInput, startPosition
 
-    invisible[player] = enabled
-    transparencySaved[player] = transparencySaved[player] or {}
-
-    if enabled then
-        for _, item in ipairs(character:GetDescendants()) do
-            if item:IsA("BasePart") or item:IsA("Decal") then
-                if transparencySaved[player][item] == nil then
-                    transparencySaved[player][item] = item.Transparency
-                end
-                item.Transparency = 1
-            end
+    handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            startInput = input.Position
+            startPosition = frame.Position
         end
-    else
-        for item, oldValue in pairs(transparencySaved[player]) do
-            if item and item.Parent then
-                item.Transparency = oldValue
-            end
+    end)
+
+    UIS.InputChanged:Connect(function(input)
+        if dragging and (
+            input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch
+        ) then
+            local delta = input.Position - startInput
+            frame.Position = UDim2.new(
+                startPosition.X.Scale,
+                startPosition.X.Offset + delta.X,
+                startPosition.Y.Scale,
+                startPosition.Y.Offset + delta.Y
+            )
         end
-        transparencySaved[player] = {}
-    end
-end
+    end)
 
-local function applyInvincible(player, enabled)
-    invincible[player] = enabled
-    local character = player.Character
-    if not character then return end
-
-    local humanoid = getHumanoid(player)
-    if not humanoid then return end
-
-    local shield = character:FindFirstChild("KATIO_InvincibleShield")
-
-    if enabled then
-        humanoid.MaxHealth = 1000000000
-        humanoid.Health = humanoid.MaxHealth
-
-        if not shield then
-            shield = Instance.new("ForceField")
-            shield.Name = "KATIO_InvincibleShield"
-            shield.Visible = true
-            shield.Parent = character
-        end
-    else
-        if shield then shield:Destroy() end
-        humanoid.MaxHealth = 100
-        humanoid.Health = math.min(humanoid.Health, 100)
-    end
-end
-
-local function setupPlayer(player)
-    player:SetAttribute("KATIO_Role", getRole(player))
-    player:SetAttribute("KATIO_OwnerUnlocked", false)
-    player:SetAttribute("KATIO_FlyEnabled", false)
-    player:SetAttribute("KATIO_InfiniteJump", false)
-
-    player.CharacterAdded:Connect(function(character)
-        local humanoid = character:WaitForChild("Humanoid", 10)
-        if humanoid then
-            humanoid.WalkSpeed = speedSaved[player] or 16
-        end
-
-        task.wait(0.2)
-
-        if noclip[player] then
-            applyNoclip(player, true)
-        end
-        if invisible[player] then
-            applyInvisible(player, true)
-        end
-        if invincible[player] then
-            applyInvincible(player, true)
+    UIS.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
         end
     end)
 end
 
-Players.PlayerAdded:Connect(setupPlayer)
+--==================================================
+--                  CLIENT KEY
+--==================================================
 
-for _, player in ipairs(Players:GetPlayers()) do
-    setupPlayer(player)
+local keyFrame = Instance.new("Frame")
+keyFrame.Parent = gui
+keyFrame.Size = UDim2.new(0.84, 0, 0, 220)
+keyFrame.Position = UDim2.new(0.08, 0, 0.32, 0)
+keyFrame.BackgroundColor3 = DARK
+corner(keyFrame)
+outline(keyFrame)
+
+label(keyFrame, "KATIO HUB", UDim2.new(1, 0, 0, 40),
+    UDim2.new(), 21)
+
+label(keyFrame, "SYSTEM KEY", UDim2.new(1, 0, 0, 25),
+    UDim2.new(0, 0, 0, 42), 14)
+
+local clientKeyBox = textbox(keyFrame, "Introduce la key CLIENT",
+    UDim2.new(0.84, 0, 0, 38), UDim2.new(0.08, 0, 0, 78))
+
+local clientVerify = button(keyFrame, "ENTRAR",
+    UDim2.new(0.84, 0, 0, 38), UDim2.new(0.08, 0, 0, 128))
+
+local keyStatus = label(keyFrame, "", UDim2.new(1, 0, 0, 25),
+    UDim2.new(0, 0, 0, 174), 12)
+
+--==================================================
+--                    MAIN MENU
+--==================================================
+
+local main = Instance.new("Frame")
+main.Parent = gui
+main.Size = UDim2.new(0.86, 0, 0, 405)
+main.Position = UDim2.new(0.07, 0, 0.15, 0)
+main.BackgroundColor3 = DARK
+main.Visible = false
+corner(main)
+outline(main)
+
+local header = Instance.new("Frame")
+header.Parent = main
+header.Size = UDim2.new(1, 0, 0, 43)
+header.BackgroundColor3 = CARD
+corner(header)
+
+label(header, "KATIO | HUB • ALL | GAMES",
+    UDim2.new(0.72, 0, 1, 0), UDim2.new(0.03, 0, 0, 0), 13)
+
+local closeMain = button(header, "X",
+    UDim2.new(0.13, 0, 0, 30), UDim2.new(0.84, 0, 0, 6))
+
+draggable(main, header)
+
+local clientPage = Instance.new("ScrollingFrame")
+clientPage.Parent = main
+clientPage.Position = UDim2.new(0, 8, 0, 52)
+clientPage.Size = UDim2.new(1, -16, 1, -104)
+clientPage.BackgroundTransparency = 1
+clientPage.BorderSizePixel = 0
+clientPage.ScrollBarThickness = 4
+clientPage.ScrollBarImageColor3 = PURPLE
+clientPage.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+local pageLayout = Instance.new("UIListLayout")
+pageLayout.Parent = clientPage
+pageLayout.Padding = UDim.new(0, 8)
+pageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+pageLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    clientPage.CanvasSize = UDim2.new(0, 0, 0, pageLayout.AbsoluteContentSize.Y + 12)
+end)
+
+local function addActionButton(parent, title, callback)
+    local b = button(parent, title, UDim2.new(1, -8, 0, 39), UDim2.new())
+    b.Parent = parent
+    b.MouseButton1Click:Connect(callback)
+    return b
 end
 
-remote.OnServerEvent:Connect(function(player, action, value)
-    local role = getRole(player)
+local function makeToggle(parent, title, action, defaultValue)
+    local state = defaultValue or false
+    local b = addActionButton(parent, title .. " : OFF", function()
+        state = not state
+        b.Text = title .. (state and " : ON" or " : OFF")
+        remote:FireServer(action, state)
+    end)
+    return b
+end
 
-    -- CLIENT POWERS: disponibles para todos
-    if action == "Speed" then
-        local speed = tonumber(value)
-        if not speed then return end
+label(clientPage, "CLIENT OPTIONS",
+    UDim2.new(1, -8, 0, 30), UDim2.new(), 16)
 
-        speed = math.clamp(speed, 16, 100)
-        speedSaved[player] = speed
+makeToggle(clientPage, "INFINITE JUMP", "InfiniteJump")
+makeToggle(clientPage, "FLY", "Fly")
+makeToggle(clientPage, "NOCLIP", "NoClip")
 
-        local humanoid = getHumanoid(player)
-        if humanoid then humanoid.WalkSpeed = speed end
+local speedBox = textbox(clientPage, "Speed (16 - 100)",
+    UDim2.new(1, -8, 0, 38), UDim2.new())
 
-    elseif action == "ResetSpeed" then
-        speedSaved[player] = 16
-        local humanoid = getHumanoid(player)
-        if humanoid then humanoid.WalkSpeed = 16 end
+local speedButton = addActionButton(clientPage, "APLICAR SPEED", function()
+    local speed = tonumber(speedBox.Text)
+    if speed then
+        remote:FireServer("Speed", math.clamp(speed, 16, 100))
+    end
+end)
 
-    elseif action == "NoClip" then
-        if typeof(value) ~= "boolean" then return end
-        applyNoclip(player, value)
+addActionButton(clientPage, "RESET SPEED", function()
+    remote:FireServer("ResetSpeed")
+    speedBox.Text = ""
+end)
 
-    elseif action == "Fly" then
-        if typeof(value) ~= "boolean" then return end
-        player:SetAttribute("KATIO_FlyEnabled", value)
+-- ESP
+local espEnabled = false
+local highlights = {}
 
-    elseif action == "InfiniteJump" then
-        if typeof(value) ~= "boolean" then return end
-        player:SetAttribute("KATIO_InfiniteJump", value)
+local function clearESP()
+    for target, highlight in pairs(highlights) do
+        if highlight then highlight:Destroy() end
+        highlights[target] = nil
+    end
+end
 
-    -- OWNER KEY: solo el usuario OWNER puede desbloquearlo
-    elseif action == "UnlockOwner" then
-        if role ~= "OWNER" then return end
-        if value == OWNER_KEY then
-            player:SetAttribute("KATIO_OwnerUnlocked", true)
-            remote:FireClient(player, "OwnerUnlocked")
-        else
-            remote:FireClient(player, "OwnerKeyInvalid")
+local function refreshESP()
+    clearESP()
+    if not espEnabled then return end
+
+    for _, target in ipairs(Players:GetPlayers()) do
+        if target ~= player and target.Character then
+            local h = Instance.new("Highlight")
+            h.Name = "KATIO_ESP"
+            h.FillColor = PURPLE
+            h.OutlineColor = WHITE
+            h.FillTransparency = 0.65
+            h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            h.Adornee = target.Character
+            h.Parent = gui
+            highlights[target] = h
         end
+    end
+end
 
-    -- OWNER POWERS
-    elseif action == "OwnerPower" then
-        if role ~= "OWNER" or player:GetAttribute("KATIO_OwnerUnlocked") ~= true then
-            return
-        end
+local espButton = addActionButton(clientPage, "ESP : OFF", function()
+    espEnabled = not espEnabled
+    espButton.Text = "ESP : " .. (espEnabled and "ON" or "OFF")
+    refreshESP()
+end)
 
-        if value == "InvincibleOn" then
-            applyInvincible(player, true)
-        elseif value == "InvincibleOff" then
-            applyInvincible(player, false)
-        elseif value == "InvisibleOn" then
-            applyInvisible(player, true)
-        elseif value == "InvisibleOff" then
-            applyInvisible(player, false)
-        elseif value == "SuperSpeedOn" then
-            speedSaved[player] = 100
-            local humanoid = getHumanoid(player)
-            if humanoid then humanoid.WalkSpeed = 100 end
-        elseif value == "SuperSpeedOff" then
-            speedSaved[player] = 16
-            local humanoid = getHumanoid(player)
-            if humanoid then humanoid.WalkSpeed = 16 end
-        elseif value == "TeleportNearest" then
-            local character = player.Character
-            local root = character and character:FindFirstChild("HumanoidRootPart")
-            if not root then return end
+Players.PlayerAdded:Connect(function()
+    task.wait(1)
+    refreshESP()
+end)
 
-            local nearestRoot
-            local nearestDistance = math.huge
+Players.PlayerRemoving:Connect(function(target)
+    if highlights[target] then
+        highlights[target]:Destroy()
+        highlights[target] = nil
+    end
+end)
 
-            for _, other in ipairs(Players:GetPlayers()) do
-                if other ~= player and other.Character then
-                    local otherRoot = other.Character:FindFirstChild("HumanoidRootPart")
-                    local otherHumanoid = getHumanoid(other)
+--==================================================
+--                 INFINITE JUMP
+--==================================================
 
-                    if otherRoot and otherHumanoid and otherHumanoid.Health > 0 then
-                        local distance = (root.Position - otherRoot.Position).Magnitude
-                        if distance < nearestDistance then
-                            nearestDistance = distance
-                            nearestRoot = otherRoot
-                        end
-                    end
-                end
-            end
-
-            if nearestRoot then
-                root.CFrame = nearestRoot.CFrame * CFrame.new(0, 0, -4)
-            end
+UIS.JumpRequest:Connect(function()
+    if player:GetAttribute("KATIO_InfiniteJump") then
+        local character = player.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
         end
     end
 end)
 
--- Mantiene el NoClip aplicado también a piezas nuevas del personaje
-RunService.Heartbeat:Connect(function()
-    for player, enabled in pairs(noclip) do
-        if enabled and player.Character then
-            for _, part in ipairs(player.Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    collisionSaved[player] = collisionSaved[player] or {}
-                    if collisionSaved[player][part] == nil then
-                        collisionSaved[player][part] = part.CanCollide
-                    end
-                    part.CanCollide = false
-                end
-            end
-        end
+--==================================================
+--                     FLY
+--==================================================
+
+local flying = false
+local flyVelocity
+local flyGyro
+local flyAttachment
+local vertical = 0
+
+local flyControls = Instance.new("Frame")
+flyControls.Parent = gui
+flyControls.Size = UDim2.new(0, 150, 0, 52)
+flyControls.Position = UDim2.new(0.5, -75, 0.78, 0)
+flyControls.BackgroundColor3 = DARK
+flyControls.Visible = false
+corner(flyControls)
+outline(flyControls)
+
+local upButton = button(flyControls, "UP",
+    UDim2.new(0.44, 0, 0, 38), UDim2.new(0.04, 0, 0, 7))
+local downButton = button(flyControls, "DOWN",
+    UDim2.new(0.44, 0, 0, 38), UDim2.new(0.52, 0, 0, 7))
+
+upButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch
+    or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        vertical = 1
+    end
+end)
+upButton.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch
+    or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        vertical = 0
     end
 end)
 
-Players.PlayerRemoving:Connect(function(player)
-    noclip[player] = nil
-    collisionSaved[player] = nil
-    transparencySaved[player] = nil
-    invincible[player] = nil
-    invisible[player] = nil
-    speedSaved[player] = nil
+downButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch
+    or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        vertical = -1
+    end
 end)
+downButton.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch
+    or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        vertical = 0
+    end
+end)
+
+local function stopFly()
+    flying = false
+    flyControls.Visible = false
+
+    if flyVelocity then flyVelocity:Destroy() end
+    if flyGyro then flyGyro:Destroy() end
+    if flyAttachment then flyAttachment:Destroy() end
+
+    flyVelocity = nil
+    flyGyro = nil
+    flyAttachment = nil
+
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.PlatformStand = false
+        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+    end
+end
+
+local function startFly()
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if not root or not humanoid then return end
+
+    stopFly()
+    flying = true
+    flyControls.Visible = true
+
+    flyAttachment = Instance.new("Attachment")
+    flyAttachment.Parent = root
+
+    flyVelocity = Instance.new("BodyVelocity")
+    flyVelocity.MaxForce = Vector3.new(1000000, 1000000, 1000000)
+    flyVelocity.Velocity = Vector3.zero
+    flyVelocity.Parent = root
+
+    flyGyro = Instance.new("BodyGyro")
+    flyGyro.MaxTorque = Vector3.new(1000000, 1000000, 1000000)
+    flyGyro.P = 10000
+    flyGyro.CFrame = workspace.CurrentCamera.CFrame
+    flyGyro.Parent = root
+
+    humanoid.PlatformStand = true
+end
+
+RunService.RenderStepped:Connect(function()
+    if not flying or not flyVelocity or not flyGyro then return end
+
+    local camera = workspace.CurrentCamera
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if not camera or not humanoid then return end
+
+    local move = humanoid.MoveDirection * 55
+    local verticalMove = vertical
+
+    if UIS:IsKeyDown(Enum.KeyCode.E) then verticalMove = 1 end
+    if UIS:IsKeyDown(Enum.KeyCode.Q) then verticalMove = -1 end
+
+    flyVelocity.Velocity = Vector3.new(move.X, verticalMove * 45, move.Z)
+    flyGyro.CFrame = camera.CFrame
+end)
+
+player:GetAttributeChangedSignal("KATIO_FlyEnabled"):Connect(function()
+    if player:GetAttribute("KATIO_FlyEnabled") then
+        startFly()
+    else
+        stopFly()
+    end
+end)
+
+player.CharacterAdded:Connect(function()
+    task.wait(1)
+    if player:GetAttribute("KATIO_FlyEnabled") then
+        startFly()
+    end
+    if espEnabled then refreshESP() end
+end)
+
+--==================================================
+--                 OWNER KEY WINDOW
+--==================================================
+
+local ownerKeyFrame = Instance.new("Frame")
+ownerKeyFrame.Parent = gui
+ownerKeyFrame.Size = UDim2.new(0.84, 0, 0, 210)
+ownerKeyFrame.Position = UDim2.new(0.08, 0, 0.34, 0)
+ownerKeyFrame.BackgroundColor3 = DARK
+ownerKeyFrame.Visible = false
+corner(ownerKeyFrame)
+outline(ownerKeyFrame)
+
+label(ownerKeyFrame, "OWNER SYSTEM KEY",
+    UDim2.new(1, 0, 0, 40), UDim2.new(), 17)
+
+local ownerKeyBox = textbox(ownerKeyFrame, "Introduce OWNER KEY",
+    UDim2.new(0.84, 0, 0, 38), UDim2.new(0.08, 0, 0, 60))
+
+local ownerVerify = button(ownerKeyFrame, "UNLOCK OWNER",
+    UDim2.new(0.84, 0, 0, 38), UDim2.new(0.08, 0, 0, 110))
+
+local ownerKeyStatus = label(ownerKeyFrame, "",
+    UDim2.new(1, 0, 0, 25), UDim2.new(0, 0, 0, 157), 12)
+
+--==================================================
+--                   OWNER MENU
+--==================================================
+
+local ownerMenu = Instance.new("Frame")
+ownerMenu.Parent = gui
+ownerMenu.Size = UDim2.new(0.86, 0, 0, 360)
+ownerMenu.Position = UDim2.new(0.07, 0, 0.18, 0)
+ownerMenu.BackgroundColor3 = DARK
+ownerMenu.Visible = false
+corner(ownerMenu)
+outline(ownerMenu)
+
+local ownerHeader = Instance.new("Frame")
+ownerHeader.Parent = ownerMenu
+ownerHeader.Size = UDim2.new(1, 0, 0, 43)
+ownerHeader.BackgroundColor3 = CARD
+corner(ownerHeader)
+
+label(ownerHeader, "KATIO | OWNER PANEL",
+    UDim2.new(0.78, 0, 1, 0), UDim2.new(0.03, 0, 0, 0), 14)
+
+local ownerClose = button(ownerHeader, "X",
+    UDim2.new(0.13, 0, 0, 30), UDim2.new(0.84, 0, 0, 6))
+
+draggable(ownerMenu, ownerHeader)
+
+local ownerPage = Instance.new("ScrollingFrame")
+ownerPage.Parent = ownerMenu
+ownerPage.Position = UDim2.new(0, 8, 0, 52)
+ownerPage.Size = UDim2.new(1, -16, 1, -60)
+ownerPage.BackgroundTransparency = 1
+ownerPage.BorderSizePixel = 0
+ownerPage.ScrollBarThickness = 4
+ownerPage.ScrollBarImageColor3 = PURPLE
+ownerPage.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+local ownerLayout = Instance.new("UIListLayout")
+ownerLayout.Parent = ownerPage
+ownerLayout.Padding = UDim.new(0, 8)
+
+ownerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    ownerPage.CanvasSize = UDim2.new(0, 0, 0, ownerLayout.AbsoluteContentSize.Y + 10)
+end)
+
+label(ownerPage, "OWNER POWERS",
+    UDim2.new(1, -8, 0, 30), UDim2.new(), 16)
+
+local function ownerToggle(title, onValue, offValue)
+    local state = false
+    local b
+    b = addActionButton(ownerPage, title .. " : OFF", function()
+        state = not state
+        b.Text = title .. (state and " : ON" or " : OFF")
+        remote:FireServer("OwnerPower", state and onValue or offValue)
+    end)
+    return b
+end
+
+ownerToggle("INVINCIBLE", "InvincibleOn", "InvincibleOff")
+ownerToggle("INVISIBLE", "InvisibleOn", "InvisibleOff")
+ownerToggle("SUPER SPEED", "SuperSpeedOn", "SuperSpeedOff")
+
+addActionButton(ownerPage, "TELEPORT TO NEAREST PLAYER", function()
+    remote:FireServer("OwnerPower", "TeleportNearest")
+end)
+
+local fullBright = false
+local oldBrightness = Lighting.Brightness
+local oldClockTime = Lighting.ClockTime
+local oldAmbient = Lighting.Ambient
+
+local brightButton = addActionButton(ownerPage, "FULL BRIGHT : OFF", function()
+    fullBright = not fullBright
+    brightButton.Text = "FULL BRIGHT : " .. (fullBright and "ON" or "OFF")
+
+    if fullBright then
+        oldBrightness = Lighting.Brightness
+        oldClockTime = Lighting.ClockTime
+        oldAmbient = Lighting.Ambient
+
+        Lighting.Brightness = 3
+        Lighting.ClockTime = 14
+        Lighting.Ambient = Color3.new(1, 1, 1)
+    else
+        Lighting.Brightness = oldBrightness
+        Lighting.ClockTime = oldClockTime
+        Lighting.Ambient = oldAmbient
+    end
+end)
+
+addActionButton(ownerPage, "CERRAR OWNER MENU", function()
+    ownerMenu.Visible = false
+end)
+
+--==================================================
+--                 MENU BUTTONS
+--==================================================
+
+local ownerButton = button(main, "OWNER",
+    UDim2.new(0.84, 0, 0, 37), UDim2.new(0.08, 0, 1, -43))
+ownerButton.Visible = false
+
+closeMain.MouseButton1Click:Connect(function()
+    main.Visible = false
+end)
+
+ownerClose.MouseButton1Click:Connect(function()
+    ownerMenu.Visible = false
+end)
+
+ownerButton.MouseButton1Click:Connect(function()
+    ownerKeyBox.Text = ""
+    ownerKeyStatus.Text = ""
+    ownerKeyFrame.Visible = true
+end)
+
+ownerVerify.MouseButton1Click:Connect(function()
+    remote:FireServer("UnlockOwner", ownerKeyBox.Text)
+end)
+
+remote.OnClientEvent:Connect(function(message)
+    if message == "OwnerUnlocked" then
+        ownerKeyFrame.Visible = false
+        ownerMenu.Visible = true
+    elseif message == "OwnerKeyInvalid" then
+        ownerKeyStatus.Text = "KEY INCORRECTA"
+        ownerKeyStatus.TextColor3 = Color3.fromRGB(255, 80, 80)
+    end
+end)
+
+clientVerify.MouseButton1Click:Connect(function()
+    if clientKeyBox.Text == CLIENT_KEY then
+        keyFrame.Visible = false
+        main.Visible = true
+        keyStatus.Text = ""
+    else
+        keyStatus.Text = "KEY INCORRECTA"
+        keyStatus.TextColor3 = Color3.fromRGB(255, 80, 80)
+    end
+end)
+
+-- Espera el rango que asigna el servidor
+task.spawn(function()
+    local role = player:GetAttribute("KATIO_Role")
+    while role == nil do
+        player:GetAttributeChangedSignal("KATIO_Role"):Wait()
+        role = player:GetAttribute("KATIO_Role")
+    end
+
+    ownerButton.Visible = (role == "OWNER")
+end)
+
+showESP = function()
+    refreshESP()
+end
+
+print("KATIO HUB CLIENT LOADED")
