@@ -1,4 +1,4 @@
-local STEAL_AN_EGG = "https://api.luarmor.net/files/v4/loaders/91ad82d753e1318189c4e249d56e7dcf.lua"
+local STEAL_AN_EGG = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"
 local byGameId = {
     [10563114921] = STEAL_AN_EGG,
 }
