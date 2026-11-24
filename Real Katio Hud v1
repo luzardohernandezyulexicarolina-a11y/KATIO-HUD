@@ -1,24 +1,29 @@
+-- CreadorTag.lua
+-- Ponlo en ServerScriptService como un Script
+
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 
--- PON TU USUARIO AQUÍ
-local OWNER = "allekseu"
+-- 👇 AQUÍ PON TU USUARIO EXACTO DE ROBLOX 👇
+local DUENO = "MINIDELTAX8"
 
+-- 1. TAG ENCIMA DE LA CABEZA
 local function crearTagEncima(player)
 	player.CharacterAdded:Connect(function(char)
 		local head = char:WaitForChild("Head")
-		
+
 		local billboard = Instance.new("BillboardGui")
+		billboard.Name = "TagCreador"
 		billboard.Size = UDim2.new(0, 200, 0, 50)
 		billboard.StudsOffset = Vector3.new(0, 3, 0)
 		billboard.AlwaysOnTop = true
 		billboard.Parent = head
-		
+
 		local label = Instance.new("TextLabel")
 		label.Size = UDim2.new(1, 0, 1, 0)
 		label.BackgroundTransparency = 1
-		label.Text = "[ OWNER ]\n" .. player.Name
-		label.TextColor3 = Color3.fromRGB(255, 215, 0) -- Dorado
+		label.Text = "[ ✓ ]\n" .. player.Name
+		label.TextColor3 = Color3.fromRGB(255, 215, 0)
 		label.TextStrokeTransparency = 0
 		label.TextScaled = true
 		label.Font = Enum.Font.GothamBold
@@ -26,15 +31,24 @@ local function crearTagEncima(player)
 	end)
 end
 
+-- 2. TAG EN EL CHAT
+TextChatService.MessageReceived:Connect(function(textChatMessage)
+	local player = Players:GetPlayerByUserId(textChatMessage.TextSource.UserId)
+	if player and player.Name == Allekseu ✓ then
+		-- Esto cambia el color y el prefijo en el chat nuevo
+		textChatMessage.Metadata = "[CREADOR] "
+	end
+end)
+
+-- 3. RANGO EN LEADERBOARD / LISTA DE JUGADORES
 Players.PlayerAdded:Connect(function(player)
-	if player.Name == OWNER then
+	if player.Name == ✓ then
 		crearTagEncima(player)
-		
-		-- Esto hace que en el leaderboard salga tu rango
+
 		local leaderstats = Instance.new("Folder")
 		leaderstats.Name = "leaderstats"
 		leaderstats.Parent = player
-		
+
 		local rango = Instance.new("StringValue")
 		rango.Name = "Rango"
 		rango.Value = "OWNER"
