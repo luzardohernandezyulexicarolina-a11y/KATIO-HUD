@@ -1,691 +1,596 @@
---==================================================
---             KATIO HUB V2 | CLIENT
---==================================================
+if _G.EmoteFling_GlobalCleanup then
+    pcall(function() _G.EmoteFling_GlobalCleanup() end)
+end
 
+local success, VaporLens = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/noicer/vapor-lib/refs/heads/main/vapor.lua"))()
+end)
+
+if not success or not VaporLens then
+    warn("EmoteFling | Failed to load Vapor Library")
+    return
+end
+
+-- ============================================================================
+-- SERVICES & STATE
+-- ============================================================================
 local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
-local RS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local Lighting = game:GetService("Lighting")
+local HttpService = game:GetService("HttpService")
+local UserInputService = game:GetService("UserInputService")
+local MarketplaceService = game:GetService("MarketplaceService")
+local LocalPlayer = Players.LocalPlayer
 
-local player = Players.LocalPlayer
-local remote = RS:WaitForChild("KATIO_Remote")
-local playerGui = player:WaitForChild("PlayerGui")
+local ModuleState = _G.ModuleState or { EmoteFlingActive = false, TurboFlingActive = false }
+_G.ModuleState = ModuleState
 
-local CLIENT_KEY = "KATIO-HUB-V1•FREE"
-
-local THEMES = {
-    {main=Color3.fromRGB(17,14,24), card=Color3.fromRGB(35,29,45), accent=Color3.fromRGB(145,65,255)},
-    {main=Color3.fromRGB(12,20,25), card=Color3.fromRGB(25,43,52), accent=Color3.fromRGB(0,220,255)},
-    {main=Color3.fromRGB(25,12,15), card=Color3.fromRGB(48,25,30), accent=Color3.fromRGB(255,65,95)},
-    {main=Color3.fromRGB(12,22,16), card=Color3.fromRGB(26,43,31), accent=Color3.fromRGB(65,255,140)}
+local EmoteFlingConfig = {
+    Armed = true,
+    AnimId = "133566007754001",
+    Speed = 16,
+    Active = false,
+    Resolving = false,
+    UseCustomId = false,
+    CustomId = "",
+    ToggleKey = Enum.KeyCode.X,
+    QuickFireKey = Enum.KeyCode.T,
+    NotificationsEnabled = true,
+    FloatingButtonsEnabled = true,
+    FloatingButtonScale = 0.7,
+    antiFallEnabled = true,
+    godEnabled = true,
+    antiFlingEnabled = true,
+    noclipEnabled = true,
 }
 
-local themeIndex = 1
-local mainColor = THEMES[1].main
-local cardColor = THEMES[1].card
-local accentColor = THEMES[1].accent
-local themedObjects = {}
+local EmoteFlingTrack = nil
+local lastFireTime = 0
+local FIRE_COOLDOWN = 1
+local UI_Loaded = false
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "KATIO_HUB"
-gui.ResetOnSpawn = false
-gui.Parent = playerGui
+local PresetAnimations = {
+    ["Dropkick"] = "104107726346415",
+    ["Dropkicking [TRENDY]"] = "90717656419568",
+    ["Tenna Kick"] = "118139885865308",
+    ["MMA Kick"] = "88347541858075",
+    ["Slap"] = "108225134235478",
+    ["Slap2"] = "78221709455150",
+    ["Push"] = "135890160317037",
+    ["Push2"] = "82070755455634",
 
-local function round(obj)
-    local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0,9)
-    c.Parent = obj
+}
+
+local PresetNames = { "Dropkick", "Dropkicking [TRENDY]", "Tenna Kick","MMA Kick", "Slap", "Slap2", "Push", "Push2" }
+local CONFIG_FILE = "emote_fling_aura.json"
+
+-- Global Connection Tracker to prevent memory leaks
+local EventConnections = {}
+local function RegisterConnection(name, conn)
+    -- Big O: O(1) hash map insertion
+    if EventConnections[name] then
+        pcall(function() EventConnections[name]:Disconnect() end)
+    end
+    EventConnections[name] = conn
 end
 
-local function register(obj, kind)
-    table.insert(themedObjects, {object=obj, kind=kind})
+local function DisconnectConnection(name)
+    -- Big O: O(1) hash map deletion
+    if EventConnections[name] then
+        pcall(function() EventConnections[name]:Disconnect() end)
+        EventConnections[name] = nil
+    end
 end
 
-local function outline(obj)
-    local s = Instance.new("UIStroke")
-    s.Color = accentColor
-    s.Thickness = 1.5
-    s.Parent = obj
-    register(s, "stroke")
+local function Notify(data)
+    if not EmoteFlingConfig.NotificationsEnabled then return end
+    if VaporLens and VaporLens.Notify then
+        VaporLens:Notify(data)
+    end
 end
 
-local function label(parent, text, height, fontSize)
-    local l = Instance.new("TextLabel")
-    l.Parent = parent
-    l.BackgroundTransparency = 1
-    l.Size = UDim2.new(1,-8,0,height)
-    l.Text = text
-    l.TextColor3 = Color3.new(1,1,1)
-    l.Font = Enum.Font.GothamBold
-    l.TextSize = fontSize or 13
-    l.TextWrapped = true
-    l.LayoutOrder = 999
-    return l
+local function SaveConfig()
+    -- Big O: O(n) for JSON encoding where n is the config size
+    local config = {
+        Armed = EmoteFlingConfig.Armed,
+        AnimId = EmoteFlingConfig.AnimId,
+        Speed = EmoteFlingConfig.Speed,
+        UseCustomId = EmoteFlingConfig.UseCustomId,
+        CustomId = EmoteFlingConfig.CustomId,
+        NotificationsEnabled = EmoteFlingConfig.NotificationsEnabled,
+        FloatingButtonsEnabled = EmoteFlingConfig.FloatingButtonsEnabled,
+        FloatingButtonScale = EmoteFlingConfig.FloatingButtonScale,
+        antiFallEnabled = EmoteFlingConfig.antiFallEnabled,
+        godEnabled = EmoteFlingConfig.godEnabled,
+        antiFlingEnabled = EmoteFlingConfig.antiFlingEnabled,
+        noclipEnabled = EmoteFlingConfig.noclipEnabled,
+        ToggleKey = (EmoteFlingConfig.ToggleKey and typeof(EmoteFlingConfig.ToggleKey) == "EnumItem") and EmoteFlingConfig.ToggleKey.Name or "K",
+        QuickFireKey = (EmoteFlingConfig.QuickFireKey and typeof(EmoteFlingConfig.QuickFireKey) == "EnumItem") and EmoteFlingConfig.QuickFireKey.Name or nil,
+    }
+
+    local jsonStr = HttpService:JSONEncode(config)
+    pcall(function() writefile(CONFIG_FILE, jsonStr) end)
 end
 
-local function button(parent, text, height)
-    local b = Instance.new("TextButton")
-    b.Parent = parent
-    b.Size = UDim2.new(1,-8,0,height or 36)
-    b.BackgroundColor3 = cardColor
-    b.Text = text
-    b.TextColor3 = Color3.new(1,1,1)
-    b.Font = Enum.Font.GothamBold
-    b.TextSize = 12
-    b.AutoButtonColor = true
-    round(b)
-    outline(b)
-    register(b,"card")
-    return b
-end
+local function LoadConfig()
+    -- Big O: O(n) for JSON decoding
+    local fileExists = false
+    if type(isfile) == "function" then
+        pcall(function() fileExists = isfile(CONFIG_FILE) end)
+    else
+        local ok, _ = pcall(function() return readfile(CONFIG_FILE) end)
+        fileExists = ok
+    end
 
-local function textbox(parent, hint, height)
-    local t = Instance.new("TextBox")
-    t.Parent = parent
-    t.Size = UDim2.new(1,-8,0,height or 36)
-    t.BackgroundColor3 = cardColor
-    t.TextColor3 = Color3.new(1,1,1)
-    t.PlaceholderColor3 = Color3.fromRGB(180,170,190)
-    t.PlaceholderText = hint
-    t.Font = Enum.Font.Gotham
-    t.TextSize = 13
-    t.ClearTextOnFocus = false
-    round(t)
-    outline(t)
-    register(t,"card")
-    return t
-end
+    if not fileExists then
+        SaveConfig()
+        return false
+    end
 
-local function makePanel(name, size, position)
-    local f = Instance.new("Frame")
-    f.Name = name
-    f.Parent = gui
-    f.Size = size
-    f.Position = position
-    f.BackgroundColor3 = mainColor
-    f.BorderSizePixel = 0
-    round(f)
-    outline(f)
-    register(f,"main")
-    return f
-end
+    local ok, content = pcall(function() return readfile(CONFIG_FILE) end)
 
-local function makeDraggable(frame, handle)
-    local dragging = false
-    local startInput, startPosition
+    if ok and content and content ~= "" then
+        local decodeOk, config = pcall(function() return HttpService:JSONDecode(content) end)
 
-    handle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            startInput = input.Position
-            startPosition = frame.Position
+        if decodeOk and type(config) == "table" then
+            EmoteFlingConfig.Armed = config.Armed or false
+            EmoteFlingConfig.AnimId = config.AnimId or "133566007754001"
+            EmoteFlingConfig.Speed = config.Speed or 16
+            EmoteFlingConfig.UseCustomId = config.UseCustomId or false
+            EmoteFlingConfig.CustomId = config.CustomId or ""
+            EmoteFlingConfig.NotificationsEnabled = config.NotificationsEnabled ~= false
+            EmoteFlingConfig.FloatingButtonsEnabled = config.FloatingButtonsEnabled or false
+            EmoteFlingConfig.antiFallEnabled = config.antiFallEnabled or false
+            EmoteFlingConfig.godEnabled = config.godEnabled or false
+            EmoteFlingConfig.antiFlingEnabled = config.antiFlingEnabled or false
+            EmoteFlingConfig.noclipEnabled = config.noclipEnabled or false
+            EmoteFlingConfig.FloatingButtonScale = math.clamp(tonumber(config.FloatingButtonScale) or 1.0, 0.5, 3.0)
+             
+            if config.ToggleKey then
+                pcall(function() EmoteFlingConfig.ToggleKey = Enum.KeyCode[config.ToggleKey] end)
+            end
+            if config.QuickFireKey then
+                pcall(function() EmoteFlingConfig.QuickFireKey = Enum.KeyCode[config.QuickFireKey] end)
+            end
+            
+            return true
         end
-    end)
-
-    UIS.InputChanged:Connect(function(input)
-        if dragging and (
-            input.UserInputType == Enum.UserInputType.MouseMovement
-            or input.UserInputType == Enum.UserInputType.Touch
-        ) then
-            local delta = input.Position - startInput
-            frame.Position = UDim2.new(
-                startPosition.X.Scale,
-                startPosition.X.Offset + delta.X,
-                startPosition.Y.Scale,
-                startPosition.Y.Offset + delta.Y
-            )
-        end
-    end)
-
-    UIS.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-        end
-    end)
+    end
+    
+    SaveConfig()
+    return false
 end
 
-local function applyTheme()
-    local t = THEMES[themeIndex]
-    mainColor, cardColor, accentColor = t.main, t.card, t.accent
+local ConfigLoaded = LoadConfig()
 
-    for _, item in ipairs(themedObjects) do
-        local obj = item.object
-        if obj and obj.Parent then
-            if item.kind == "main" then
-                obj.BackgroundColor3 = mainColor
-            elseif item.kind == "card" then
-                obj.BackgroundColor3 = cardColor
-            elseif item.kind == "stroke" then
-                obj.Color = accentColor
+local function GetPresetNameFromId(id)
+    -- Big O: O(n) where n is the number of presets
+    for name, presetId in pairs(PresetAnimations) do
+        if presetId == id then return name end
+    end
+    return "Dropkick"
+end
+
+-- ============================================================================
+-- STRICT ANIMATION ID RESOLUTION & VALIDATION
+-- ============================================================================
+local function ResolveAnimationId(rawId)
+    -- Big O: O(1) for pattern matching and remote query resolution
+    if not rawId or type(rawId) ~= "string" or rawId == "" or rawId:match("^%s*$") then return nil end
+    local numStr = rawId:match("%d+")
+    if not numStr then return nil end
+
+    local numId = tonumber(numStr)
+    
+    local ok, info = pcall(function() return MarketplaceService:GetProductInfo(numId) end)
+    if ok and info then
+        if info.AssetTypeId ~= 24 and info.AssetTypeId ~= 61 then
+            return nil 
+        end
+    end
+
+    local getOk, objects = pcall(function() return game:GetObjects("rbxassetid://" .. numStr) end)
+    if getOk and type(objects) == "table" then
+        for _, obj in pairs(objects) do
+            if typeof(obj) == "Instance" then
+                if obj:IsA("Animation") then return obj.AnimationId end
+                local childAnim = obj:FindFirstChildWhichIsA("Animation", true)
+                if childAnim then return childAnim.AnimationId end
             end
         end
     end
+
+    return "rbxassetid://" .. numStr
 end
 
---==================================================
--- CLIENT KEY
---==================================================
+-- ============================================================================
+-- CLEANUP
+-- ============================================================================
+local function EmoteFlingCleanup()
+    EmoteFlingConfig.Active = false
+    ModuleState.EmoteFlingActive = false
 
-local keyPanel = makePanel(
-    "CLIENT_KEY",
-    UDim2.new(0,290,0,205),
-    UDim2.new(0.5,-145,0.5,-102)
-)
-
-local keyTitle = label(keyPanel,"KATIO HUB | SYSTEM KEY",38,18)
-keyTitle.Position = UDim2.new(0,0,0,5)
-
-local clientKeyBox = textbox(keyPanel,"CLIENT KEY",36)
-clientKeyBox.Position = UDim2.new(0,4,0,60)
-
-local verifyClient = button(keyPanel,"ENTRAR",36)
-verifyClient.Position = UDim2.new(0,4,0,105)
-
-local keyStatus = label(keyPanel,"",24,11)
-keyStatus.Position = UDim2.new(0,0,0,151)
-
---==================================================
--- MAIN MENU
---==================================================
-
-local main = makePanel(
-    "MAIN_MENU",
-    UDim2.new(0,310,0,390),
-    UDim2.new(0.5,-155,0.5,-195)
-)
-main.Visible = false
-
-local header = Instance.new("Frame")
-header.Parent = main
-header.Size = UDim2.new(1,0,0,38)
-header.BackgroundColor3 = cardColor
-round(header)
-register(header,"card")
-
-local title = Instance.new("TextLabel")
-title.Parent = header
-title.BackgroundTransparency = 1
-title.Position = UDim2.new(0,10,0,0)
-title.Size = UDim2.new(1,-55,1,0)
-title.Text = "KATIO | HUB • ALL | GAMES"
-title.TextColor3 = Color3.new(1,1,1)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 12
-title.TextXAlignment = Enum.TextXAlignment.Left
-
-local closeMain = Instance.new("TextButton")
-closeMain.Parent = header
-closeMain.Size = UDim2.new(0,34,0,30)
-closeMain.Position = UDim2.new(1,-39,0,4)
-closeMain.BackgroundTransparency = 1
-closeMain.Text = "X"
-closeMain.TextColor3 = accentColor
-closeMain.Font = Enum.Font.GothamBold
-closeMain.TextSize = 17
-
-makeDraggable(main,header)
-
--- Navigation
-local nav = Instance.new("Frame")
-nav.Parent = main
-nav.Position = UDim2.new(0,5,0,44)
-nav.Size = UDim2.new(1,-10,0,32)
-nav.BackgroundTransparency = 1
-
-local navLayout = Instance.new("UIListLayout")
-navLayout.Parent = nav
-navLayout.FillDirection = Enum.FillDirection.Horizontal
-navLayout.Padding = UDim.new(0,4)
-navLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-
-local pages = {}
-local navButtons = {}
-
-local pageNames = {"HOME","EXPLOITS","CONFIG","PLAYER"}
-
-for _, name in ipairs(pageNames) do
-    local tab = Instance.new("TextButton")
-    tab.Parent = nav
-    tab.Size = UDim2.new(0.25,-4,1,0)
-    tab.BackgroundColor3 = cardColor
-    tab.Text = name
-    tab.TextColor3 = Color3.new(1,1,1)
-    tab.Font = Enum.Font.GothamBold
-    tab.TextSize = 9
-    round(tab)
-    outline(tab)
-    register(tab,"card")
-    navButtons[name] = tab
-
-    local page = Instance.new("ScrollingFrame")
-    page.Parent = main
-    page.Position = UDim2.new(0,7,0,83)
-    page.Size = UDim2.new(1,-14,1,-91)
-    page.BackgroundTransparency = 1
-    page.BorderSizePixel = 0
-    page.ScrollBarThickness = 3
-    page.ScrollBarImageColor3 = accentColor
-    page.CanvasSize = UDim2.new(0,0,0,0)
-    page.Visible = false
-
-    local layout = Instance.new("UIListLayout")
-    layout.Parent = page
-    layout.Padding = UDim.new(0,6)
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
-
-    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        page.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y+10)
-    end)
-
-    pages[name] = page
-end
-
-local function showPage(name)
-    for pageName, page in pairs(pages) do
-        page.Visible = pageName == name
+    if EmoteFlingTrack then
+        pcall(function() EmoteFlingTrack:Stop() end)
+        EmoteFlingTrack = nil
     end
-    for pageName, tab in pairs(navButtons) do
-        tab.BackgroundColor3 = pageName == name and accentColor or cardColor
-    end
-end
 
-for name, tab in pairs(navButtons) do
-    tab.MouseButton1Click:Connect(function()
-        showPage(name)
-    end)
-end
-
---==================================================
--- HOME
---==================================================
-
-local home = pages.HOME
-
-label(home,"WELCOME TO KATIO HUB",27,16)
-label(home,"Jugador: "..player.Name,27,12)
-
-local roleLabel = label(home,"Rango: verificando...",27,12)
-
-local ownerButton = button(home,"OWNER | ABRIR PANEL",38)
-ownerButton.Visible = false
-
-label(home,"Canal de YouTube: Real Katio",27,11)
-
-local youtubeButton = button(home,"COPIAR / VER CANAL",34)
-youtubeButton.MouseButton1Click:Connect(function()
-    -- Roblox no permite abrir enlaces externos desde un LocalScript normal.
-    youtubeButton.Text = "YOUTUBE: @RealKatioScripts"
-end)
-
---==================================================
--- EXPLOITS
---==================================================
-
-local exploits = pages.EXPLOITS
-label(exploits,"CLIENT OPTIONS",25,15)
-
-local function toggle(parent, titleText, action)
-    local state = false
-    local b = button(parent,titleText.." : OFF",36)
-
-    b.MouseButton1Click:Connect(function()
-        state = not state
-        b.Text = titleText.." : "..(state and "ON" or "OFF")
-        remote:FireServer(action,state)
-    end)
-
-    return b
-end
-
-toggle(exploits,"INFINITE JUMP","InfiniteJump")
-toggle(exploits,"FLY","Fly")
-toggle(exploits,"NOCLIP","NoClip")
-
-local speedBox = textbox(exploits,"Speed: escribe un valor entre 16 y 100",36)
-
-local applySpeed = button(exploits,"APLICAR SPEED",36)
-applySpeed.MouseButton1Click:Connect(function()
-    local value = tonumber(speedBox.Text)
-    if value then
-        remote:FireServer("Speed",math.clamp(value,16,100))
-    else
-        applySpeed.Text = "ESCRIBE UN NÚMERO"
-    end
-end)
-
-local resetSpeed = button(exploits,"RESET SPEED",36)
-resetSpeed.MouseButton1Click:Connect(function()
-    remote:FireServer("ResetSpeed")
-    speedBox.Text = ""
-end)
-
--- ESP
-local espEnabled = false
-local espHighlights = {}
-
-local function clearESP()
-    for _, h in pairs(espHighlights) do
-        if h then h:Destroy() end
-    end
-    table.clear(espHighlights)
-end
-
-local function refreshESP()
-    clearESP()
-    if not espEnabled then return end
-
-    for _, target in ipairs(Players:GetPlayers()) do
-        if target ~= player and target.Character then
-            local h = Instance.new("Highlight")
-            h.Name = "KATIO_ESP"
-            h.Adornee = target.Character
-            h.FillColor = accentColor
-            h.OutlineColor = Color3.new(1,1,1)
-            h.FillTransparency = 0.65
-            h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-            h.Parent = gui
-            espHighlights[target] = h
+    local char = LocalPlayer.Character
+    if char then
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.AssemblyAngularVelocity = Vector3.zero
+            hrp.Velocity = Vector3.zero
+            hrp.RotVelocity = Vector3.zero
         end
     end
 end
 
-local espButton = button(exploits,"ESP : OFF",36)
-espButton.MouseButton1Click:Connect(function()
-    espEnabled = not espEnabled
-    espButton.Text = "ESP : "..(espEnabled and "ON" or "OFF")
-    refreshESP()
-end)
+-- ============================================================================
+-- FIRE EMOTE FLING
+-- ============================================================================
+local function FireEmoteFling()
+    local now = tick()
+    if now - lastFireTime < FIRE_COOLDOWN then return end
+    lastFireTime = now
 
-Players.PlayerAdded:Connect(function(target)
-    target.CharacterAdded:Connect(function()
-        task.wait(1)
-        refreshESP()
-    end)
-end)
-
-Players.PlayerRemoving:Connect(function(target)
-    if espHighlights[target] then
-        espHighlights[target]:Destroy()
-        espHighlights[target] = nil
+    if EmoteFlingConfig.Resolving then
+        Notify({ Title = "Emote Fling", Content = "Please wait, resolving animation...", Duration = 2, Icon = "loader" })
+        return
     end
-end)
 
---==================================================
--- CONFIGURATION
---==================================================
-
-local config = pages.CONFIG
-
-label(config,"CONFIGURACIÓN DEL MENÚ",28,14)
-
-local themeButton = button(config,"CAMBIAR COLOR DEL MENÚ",40)
-themeButton.MouseButton1Click:Connect(function()
-    themeIndex = themeIndex % #THEMES + 1
-    applyTheme()
-    themeButton.Text = "COLOR: "..themeIndex.." / "..#THEMES
-end)
-
-label(config,"El color se aplica a las ventanas y botones.",35,10)
-
---==================================================
--- PLAYER
---==================================================
-
-local playerPage = pages.PLAYER
-label(playerPage,"JUGADORES",26,15)
-
-local spectating = false
-local previousSubject
-
-local function stopSpectating()
-    spectating = false
-    local camera = workspace.CurrentCamera
-    local character = player.Character
-    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-    if camera and humanoid then
-        camera.CameraSubject = humanoid
+    if EmoteFlingConfig.Active then
+        EmoteFlingConfig.Active = false 
+        return
     end
-end
 
-local function rebuildPlayerList()
-    for _, child in ipairs(playerPage:GetChildren()) do
-        if child:IsA("TextButton") and child.Name == "PlayerEntry" then
-            child:Destroy()
+    if not EmoteFlingConfig.Armed then
+        Notify({ Title = "Emote Fling", Content = "Fling is not armed. Enable it first.", Duration = 2, Icon = "alert-circle" })
+        return
+    end
+
+    local targetId = EmoteFlingConfig.AnimId
+    if type(targetId) ~= "string" or targetId == "" or targetId:match("^%s*$") then
+        Notify({ Title = "Emote Fling", Content = "No valid Animation ID set.", Duration = 2, Icon = "alert-circle" })
+        return
+    end
+
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChildWhichIsA("Humanoid")
+
+    if not (hrp and hum) then
+        Notify({ Title = "Emote Fling", Content = "Character not found.", Duration = 2, Icon = "alert-circle" })
+        return
+    end
+
+    EmoteFlingConfig.Resolving = true
+    Notify({ Title = "Emote Fling", Content = "Resolving animation...", Duration = 1.5, Icon = "loader" })
+
+    task.spawn(function()
+        local finalAnimId = ResolveAnimationId(targetId)
+        EmoteFlingConfig.Resolving = false
+
+        if not finalAnimId then
+            Notify({ Title = "Emote Fling", Content = "Invalid ID! Ensure it's an Animation or Emote.", Duration = 3, Icon = "x-circle" })
+            return
         end
-    end
 
-    for _, target in ipairs(Players:GetPlayers()) do
-        if target ~= player then
-            local b = button(playerPage,"OBSERVAR: "..target.Name,34)
-            b.Name = "PlayerEntry"
+        char = LocalPlayer.Character
+        hrp = char and char:FindFirstChild("HumanoidRootPart")
+        hum = char and char:FindFirstChildWhichIsA("Humanoid")
+        if not (hrp and hum) then return end
 
-            b.MouseButton1Click:Connect(function()
-                local character = target.Character
-                local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    spectating = true
-                    workspace.CurrentCamera.CameraSubject = humanoid
+        local anim = Instance.new("Animation")
+        anim.AnimationId = finalAnimId
+
+        local trackOk, track = pcall(function() return hum:LoadAnimation(anim) end)
+
+        if not trackOk or not track then
+            Notify({ Title = "Emote Fling", Content = "Failed to load animation track.", Duration = 2, Icon = "x-circle" })
+            return
+        end
+
+        EmoteFlingConfig.Active = true
+        ModuleState.EmoteFlingActive = true
+        EmoteFlingTrack = track
+
+        local animStopped = false
+        local trackStoppedConn
+        trackStoppedConn = track.Stopped:Once(function()
+            animStopped = true
+            if trackStoppedConn then pcall(function() trackStoppedConn:Disconnect() end) end
+        end)
+
+        track.Priority = Enum.AnimationPriority.Action
+        track.Looped = false
+        track:Play()
+
+        Notify({ Title = "Emote Fling", Content = "Active! Press Fling Keybind or execute again to STOP.", Duration = 2, Icon = "zap" })
+
+        local flip = 1
+        local timeout = tick() + 300 
+
+        -- Big O: O(1) constant time execution per engine frame
+        while EmoteFlingConfig.Active and not animStopped do
+            if tick() > timeout then break end
+            
+            RunService.Heartbeat:Wait()
+
+            local c = LocalPlayer.Character
+            local r = c and c:FindFirstChild("HumanoidRootPart")
+            local h = c and c:FindFirstChildWhichIsA("Humanoid")
+
+            if r and h then
+                local dir = h.MoveDirection
+                flip = flip * -1
+                r.AssemblyLinearVelocity = Vector3.new(100000 * flip, 0, 100000 * flip)
+                r.AssemblyAngularVelocity = Vector3.new(100000 * flip, 100000 * flip, 100000 * flip)
+
+                RunService.RenderStepped:Wait()
+
+                if not EmoteFlingConfig.Active then break end
+
+                if dir.Magnitude > 0 then
+                    local spd = EmoteFlingConfig.Speed
+                    r.AssemblyLinearVelocity = Vector3.new(dir.X * spd, -2, dir.Z * spd)
+                    r.Velocity = Vector3.new(dir.X * spd, -2, dir.Z * spd)
+                else
+                    r.AssemblyLinearVelocity = Vector3.new(0, -2, 0)
+                    r.Velocity = Vector3.new(0, -2, 0)
                 end
-            end)
+                r.AssemblyAngularVelocity = Vector3.zero
+                r.RotVelocity = Vector3.zero
+            else
+                break
+            end
         end
-    end
-end
 
-local refreshPlayers = button(playerPage,"ACTUALIZAR JUGADORES",34)
-refreshPlayers.MouseButton1Click:Connect(rebuildPlayerList)
-
-local stopSpectate = button(playerPage,"VOLVER A MI PERSONAJE",34)
-stopSpectate.MouseButton1Click:Connect(stopSpectating)
-
-Players.PlayerAdded:Connect(rebuildPlayerList)
-Players.PlayerRemoving:Connect(rebuildPlayerList)
-
---==================================================
--- INFINITE JUMP
---==================================================
-
-UIS.JumpRequest:Connect(function()
-    if player:GetAttribute("KATIO_InfiniteJump") then
-        local character = player.Character
-        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
-    end
-end)
-
---==================================================
--- FLY CONTROLS
---==================================================
-
-local flyControls = Instance.new("Frame")
-flyControls.Parent = gui
-flyControls.Size = UDim2.new(0,145,0,48)
-flyControls.Position = UDim2.new(0.5,-72,0.82,0)
-flyControls.BackgroundColor3 = mainColor
-flyControls.Visible = false
-round(flyControls)
-outline(flyControls)
-register(flyControls,"main")
-
-local up = button(flyControls,"SUBIR",UDim2.new(0.46,0,0,34))
-up.Position = UDim2.new(0.02,0,0,7)
-
-local down = button(flyControls,"BAJAR",34)
-down.Size = UDim2.new(0.46,0,0,34)
-down.Position = UDim2.new(0.52,0,0,7)
-
-local vertical = 0
-
-local function holdButton(b,value)
-    b.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch
-        or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            vertical = value
-        end
-    end)
-    b.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch
-        or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            vertical = 0
-        end
+        EmoteFlingCleanup()
+        Notify({ Title = "Emote Fling", Content = "Physics restored to normal.", Duration = 2, Icon = "shield-off" })
     end)
 end
 
-holdButton(up,1)
-holdButton(down,-1)
+-- ============================================================================
+-- UI
+-- ============================================================================
+VaporLens:SetTheme({
+	-- Window
+	Glass = Color3.fromRGB(8, 12, 20),
+	GlassTransp = 0.35,
+	Border = Color3.fromRGB(25, 40, 65),
+	BorderTransp = 0.45,
 
-local flying = false
-local flyVelocity
-local flyGyro
+	-- Accent
+	Glow = Color3.fromRGB(0, 130, 255),
 
-local function stopFly()
-    flying = false
-    flyControls.Visible = false
+	-- Text
+	Primary = Color3.fromRGB(235, 245, 255),
+	Secondary = Color3.fromRGB(145, 165, 185),
+	SecTransp = 0,
 
-    if flyVelocity then flyVelocity:Destroy() end
-    if flyGyro then flyGyro:Destroy() end
+	-- Elements
+	ElemBg = Color3.fromRGB(15, 22, 35),
+	ElemTransp = 0.50,
+	ElemHoverTransp = 0.25,
+	ElemBdrTransp = 0.70,
 
-    flyVelocity = nil
-    flyGyro = nil
+	-- Controls
+	ToggleOff = Color3.fromRGB(25, 35, 50),
+	SliderTrack = Color3.fromRGB(10, 15, 25),
+	InputBg = Color3.fromRGB(6, 8, 14),
 
-    local character = player.Character
-    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        humanoid.PlatformStand = false
-        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+	-- Section label
+	SectionTransp = 0.35,
+
+	-- Notification
+	NotifBg = Color3.fromRGB(4, 6, 10),
+})
+
+local uiWindow = VaporLens:CreateWindow({
+    Title = "Emote Fling",
+    Subtitle = "i love flings",
+    Icon = "plane",
+    Width = 340,
+    Height = 520,
+    ToggleKey = EmoteFlingConfig.ToggleKey,
+})
+
+local flingTab = uiWindow:CreateTab({ Title = "Emote Fling", Icon = "zap" })
+
+flingTab:CreateSection("Settings")
+
+flingTab:CreateToggle({
+    Name = "Enable Emote Fling",
+    CurrentValue = EmoteFlingConfig.Armed,
+    Callback = function(state)
+        EmoteFlingConfig.Armed = state
+        if not state and EmoteFlingConfig.Active then
+            EmoteFlingConfig.Active = false 
+        end
+        SaveConfig()
+    end,
+})
+
+flingTab:CreateDropdown({
+    Name = "Preset Animations",
+    Options = PresetNames,
+    CurrentOption = GetPresetNameFromId(EmoteFlingConfig.AnimId),
+    Callback = function(selected)
+        if EmoteFlingConfig.UseCustomId then return end
+        EmoteFlingConfig.AnimId = PresetAnimations[selected] or "133566007754001"
+        SaveConfig()
+    end,
+})
+
+flingTab:CreateToggle({
+    Name = "Use Custom Animation ID",
+    CurrentValue = EmoteFlingConfig.UseCustomId,
+    Callback = function(state)
+        EmoteFlingConfig.UseCustomId = state
+        if state then
+            EmoteFlingConfig.AnimId = EmoteFlingConfig.CustomId or ""
+        else
+            EmoteFlingConfig.AnimId = PresetAnimations["Dropkick"] or "133566007754001" 
+        end
+        SaveConfig()
+    end,
+})
+
+flingTab:CreateInput({
+    Name = "Animation ID",
+    PlaceholderText = "Enter Asset ID...",
+    CurrentValue = EmoteFlingConfig.CustomId,
+    Callback = function(text)
+        EmoteFlingConfig.CustomId = text
+        if EmoteFlingConfig.UseCustomId then
+            EmoteFlingConfig.AnimId = text
+        end
+        SaveConfig()
+    end,
+})
+
+flingTab:CreateSlider({
+    Name = "Walk Speed",
+    Range = { 16, 200 },
+    CurrentValue = EmoteFlingConfig.Speed,
+    Callback = function(val)
+        EmoteFlingConfig.Speed = val
+        SaveConfig()
+    end,
+})
+
+flingTab:CreateButton({
+    Name = "Execute / Stop Fling",
+    Callback = function()
+        FireEmoteFling()
+    end,
+})
+
+flingTab:CreateKeybind({
+    Name = "Fling Keybind",
+    CurrentKeybind = EmoteFlingConfig.QuickFireKey,
+    CallOnChange = false,
+    Callback = function(key)
+        EmoteFlingConfig.QuickFireKey = key
+        SaveConfig()
+    end,
+})
+
+local flingInputConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.Unknown then return end 
+    
+    if EmoteFlingConfig.QuickFireKey and input.KeyCode == EmoteFlingConfig.QuickFireKey then
+        FireEmoteFling()
+    end
+end)
+RegisterConnection("FlingInputConn", flingInputConn)
+
+flingTab:CreateToggle({
+    Name = "Enable Notifications",
+    CurrentValue = EmoteFlingConfig.NotificationsEnabled,
+    Callback = function(state)
+        EmoteFlingConfig.NotificationsEnabled = state
+        SaveConfig()
+    end,
+})
+
+uiWindow:CreateToggleKeybind(flingTab, {
+    Name = "Toggle UI Visibility",
+    CurrentKeybind = EmoteFlingConfig.ToggleKey,
+    Callback = function(key)
+        EmoteFlingConfig.ToggleKey = key
+        SaveConfig()
+    end
+})
+
+-- ============================================================================
+-- SUPPLEMENT: SHOW FLOATING BUTTONS TOGGLE & FLOATING BUTTONS
+-- ============================================================================
+local floatingButtons = {}
+
+local function fireWithSpecificId(animId)
+    if type(animId) ~= "string" or animId == "" or animId:match("^%s*$") then return end
+
+    local savedId = EmoteFlingConfig.AnimId
+    EmoteFlingConfig.AnimId = animId
+    FireEmoteFling()
+    EmoteFlingConfig.AnimId = savedId
+end
+
+local function destroyFloatingButtons()
+    -- Big O: O(n) where n is the number of active floating buttons
+    for _, fab in ipairs(floatingButtons) do
+        if fab.Instance and fab.Instance.Parent then
+            pcall(function() fab.Instance:Destroy() end)
+        end
+    end
+    floatingButtons = {}
+end
+
+local function createFloatingButtons()
+    if #floatingButtons > 0 then return end
+
+    local scale = EmoteFlingConfig.FloatingButtonScale
+    local BTN_SZ = math.max(44, math.floor(48 * scale))
+    local GAP = math.floor(8 * scale)
+    local PAD = math.floor(80 * scale)
+
+    local buttonInfos = {}
+
+    for _, presetName in ipairs(PresetNames) do
+        table.insert(buttonInfos, {
+            Text = presetName,
+            id = PresetAnimations[presetName]
+        })
+    end
+    table.insert(buttonInfos, { Text = "Custom animID", id = nil })
+
+    for i, info in ipairs(buttonInfos) do
+        local clickHandler
+        if info.id then
+            clickHandler = function() fireWithSpecificId(info.id) end
+        else
+            clickHandler = function()
+                local customId = EmoteFlingConfig.CustomId
+                if not customId or customId == "" or customId:match("^%s*$") then
+                    Notify({ Title = "Floating Fling", Content = "Custom Animation ID is not set.", Duration = 3, Icon = "alert-circle" })
+                    return
+                end
+                fireWithSpecificId(customId)
+            end
+        end
+
+        local fab = uiWindow:CreateFloatingButton({
+            Text = info.Text,
+            Icon = "hand-metal",
+            Size = BTN_SZ,
+            Position = UDim2.new(1, -150, 0, 0),
+            ClickCallback = clickHandler,
+            DragEnabled = true,
+            DragThreshold = 4,
+            SnapToEdges = false,
+            PulseOnClick = false,
+            ZIndex = 100
+        })
+
+        task.defer(function()
+            local instance = fab.Instance
+            if not instance or not instance.Parent then return end
+            local width = instance.AbsoluteSize.X
+            local yOffset = PAD + (i - 1) * (BTN_SZ + GAP)
+            fab:SetPosition(UDim2.new(1, -PAD - width, 0, yOffset))
+        end)
+
+        table.insert(floatingButtons, fab)
     end
 end
 
-local function startFly()
-    local character = player.Character
-    local root = character and character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-    if not root or not humanoid then return end
+flingTab:CreateSection("Floating Buttons")
 
-    stopFly()
-    flying = true
-    flyControls.Visible = true
-
-    flyVelocity = Instance.new("BodyVelocity")
-    flyVelocity.MaxForce = Vector3.new(1e6,1e6,1e6)
-    flyVelocity.Velocity = Vector3.zero
-    flyVelocity.Parent = root
-
-    flyGyro = Instance.new("BodyGyro")
-    flyGyro.MaxTorque = Vector3.new(1e6,1e6,1e6)
-    flyGyro.P = 10000
-    flyGyro.CFrame = workspace.CurrentCamera.CFrame
-    flyGyro.Parent = root
-
-    humanoid.PlatformStand = true
-end
-
-RunService.RenderStepped:Connect(function()
-    if not flying or not flyVelocity or not flyGyro then return end
-
-    local camera = workspace.CurrentCamera
-    local character = player.Character
-    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-    if not camera or not humanoid then return end
-
-    local move = humanoid.MoveDirection * 50
-    local verticalMove = vertical
-
-    if UIS:IsKeyDown(Enum.KeyCode.E) then verticalMove = 1 end
-    if UIS:IsKeyDown(Enum.KeyCode.Q) then verticalMove = -1 end
-
-    flyVelocity.Velocity = Vector3.new(move.X,verticalMove*40,move.Z)
-    flyGyro.CFrame = camera.CFrame
-end)
-
-player:GetAttributeChangedSignal("KATIO_FlyEnabled"):Connect(function()
-    if player:GetAttribute("KATIO_FlyEnabled") then
-        startFly()
-    else
-        stopFly()
-    end
-end)
-
---==================================================
--- OWNER KEY + OWNER WINDOW
---==================================================
-
-local ownerKeyPanel = makePanel(
-    "OWNER_SYSTEM_KEY",
-    UDim2.new(0,290,0,190),
-    UDim2.new(0.5,-145,0.5,-95)
-)
-ownerKeyPanel.Visible = false
-
-local ownerKeyTitle = label(ownerKeyPanel,"OWNER | SYSTEM KEY",35,17)
-ownerKeyTitle.Position = UDim2.new(0,0,0,5)
-
-local ownerKeyBox = textbox(ownerKeyPanel,"KATIO OWNER KEY",36)
-ownerKeyBox.Position = UDim2.new(0,4,0,55)
-
-local ownerVerify = button(ownerKeyPanel,"VERIFICAR OWNER",36)
-ownerVerify.Position = UDim2.new(0,4,0,100)
-
-local ownerStatus = label(ownerKeyPanel,"",24,11)
-ownerStatus.Position = UDim2.new(0,0,0,145)
-
-local ownerMenu = makePanel(
-    "OWNER_MENU",
-    UDim2.new(0,300,0,340),
-    UDim2.new(0.5,-150,0.5,-170)
-)
-ownerMenu.Visible = false
-
-local ownerHeader = Instance.new("Frame")
-ownerHeader.Parent = ownerMenu
-ownerHeader.Size = UDim2.new(1,0,0,38)
-ownerHeader.BackgroundColor3 = cardColor
-round(ownerHeader)
-register(ownerHeader,"card")
-
-local ownerTitle = Instance.new("TextLabel")
-ownerTitle.Parent = ownerHeader
-ownerTitle.BackgroundTransparency = 1
-ownerTitle.Position = UDim2.new(0,10,0,0)
-ownerTitle.Size = UDim2.new(1,-50,1,0)
-ownerTitle.Text = "KATIO | OWNER PANEL"
-ownerTitle.TextColor3 = Color3.new(1,1,1)
-ownerTitle.Font = Enum.Font.GothamBold
-ownerTitle.TextSize = 13
-
-local closeOwner = Instance.new("TextButton")
-closeOwner.Parent = ownerHeader
-closeOwner.Size = UDim2.new(0,35,0,30)
-closeOwner.Position = UDim2.new(1,-39,0,4)
-closeOwner.BackgroundTransparency = 1
-closeOwner.Text = "X"
-closeOwner.TextColor3 = accentColor
-closeOwner.Font = Enum.Font.GothamBold
-closeOwner.TextSize = 17
-
-makeDraggable(ownerMenu,ownerHeader)
-
-local ownerPage = Instance.new("ScrollingFrame")
-ownerPage.Parent = ownerMenu
-ownerPage.Position = UDim2.new(0,7,0,45)
-ownerPage.Size = UDim2.new(1,-14,1,-52)
-ownerPage.BackgroundTransparency = 1
-ownerPage.BorderSizePixel = 0
-ownerPage.ScrollBarThickness = 3
-ownerPage.CanvasSize = UDim2.new(0,0,0,0)
-
-local ownerLayout = Instance.new("UIListLayout")
-ownerLayout.Parent = ownerPage
-ownerLayout.Padding = UDim.new(0,6)
-
-ownerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    ownerPage.CanvasSize = UDim2.new(0,0,0,ownerLayout.AbsoluteContentSize.Y+10)
-end)
-
-label(ownerPage,"OWNER POWERS",25,15)
-
-local function ownerToggle(titleText,onAction,offActio
+flingTab:CreateToggle({
+    Name = "Show Floating Buttons",
+    CurrentValue = EmoteFlingConfig.FloatingButtonsEnabled,
+    Callback = function(state)
+        EmoteFlingConf
