@@ -4,10 +4,10 @@
  
 ]]
 local CONFIG = {
-    FakeName = "Allecseu",
+    FakeName = "Allekseu",
     FakeDisplay = "MINIDELTAX8",
     Badge = utf8.char(0xE000),
-    BadgeAlt = "✓",
+    BadgeAlt = "⊡",
     UseAltBadge = false,
     Separator = " "
 }
