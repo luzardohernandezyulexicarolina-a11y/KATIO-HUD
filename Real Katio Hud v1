@@ -1,180 +1,43 @@
---[[
-    Name Spoofer + Verified Badge
-    Verified Badge on nametag, escape menu, leaderboard, plots, etc created by KATIO 
- 
-]]
-local CONFIG = {
-    FakeName = "Allekseu",
-    FakeDisplay = "MINIDELTAX8",
-    Badge = utf8.char(0xE000),
-    BadgeAlt = "⊡",
-    UseAltBadge = false,
-    Separator = " "
-}
-
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Workspace = game:GetService("Workspace")
+local TextChatService = game:GetService("TextChatService")
 
-local VERIFIED_BADGE = CONFIG.UseAltBadge and CONFIG.BadgeAlt or CONFIG.Badge
-local RealName = LocalPlayer.Name
-local RealDisplay = LocalPlayer.DisplayName
+-- PON TU USUARIO AQUÍ
+local OWNER = "allekseu"
 
-local TargetName = CONFIG.FakeName
-local TargetDisplay = CONFIG.FakeDisplay .. CONFIG.Separator .. VERIFIED_BADGE
-
-local function SpoofAndBadge(obj)
-    if not obj.Text or obj.Text == "" then return end
-    
-    local text = obj.Text
-    
-    if text:find(CONFIG.FakeDisplay .. CONFIG.Separator .. VERIFIED_BADGE) then return end
-    
-    if text == CONFIG.FakeDisplay then
-        obj.Text = TargetDisplay
-        return
-    end
-    
-    if text == CONFIG.FakeName then return end
-    
-    local newText = text
-    
-    if newText:find(RealDisplay) then
-        newText = newText:gsub(RealDisplay, TargetDisplay)
-    end
-    
-    if newText:find(RealName) then
-        newText = newText:gsub(RealName, TargetName)
-    end
-    
-    if newText ~= obj.Text then
-        obj.Text = newText
-    end
+local function crearTagEncima(player)
+	player.CharacterAdded:Connect(function(char)
+		local head = char:WaitForChild("Head")
+		
+		local billboard = Instance.new("BillboardGui")
+		billboard.Size = UDim2.new(0, 200, 0, 50)
+		billboard.StudsOffset = Vector3.new(0, 3, 0)
+		billboard.AlwaysOnTop = true
+		billboard.Parent = head
+		
+		local label = Instance.new("TextLabel")
+		label.Size = UDim2.new(1, 0, 1, 0)
+		label.BackgroundTransparency = 1
+		label.Text = "[ OWNER ]\n" .. player.Name
+		label.TextColor3 = Color3.fromRGB(255, 215, 0) -- Dorado
+		label.TextStrokeTransparency = 0
+		label.TextScaled = true
+		label.Font = Enum.Font.GothamBold
+		label.Parent = billboard
+	end)
 end
 
-local function MonitorObject(obj)
-    if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
-        SpoofAndBadge(obj)
-        
-        obj:GetPropertyChangedSignal("Text"):Connect(function()
-            SpoofAndBadge(obj)
-        end)
-    end
-end
-
-for _, v in ipairs(LocalPlayer.PlayerGui:GetDescendants()) do
-    MonitorObject(v)
-end
-
-pcall(function()
-    local CoreGui = game:GetService("CoreGui")
-    for _, v in ipairs(CoreGui:GetDescendants()) do
-        MonitorObject(v)
-    end
-    CoreGui.DescendantAdded:Connect(MonitorObject)
-end)
-
-LocalPlayer.PlayerGui.DescendantAdded:Connect(MonitorObject)
-
-local function MonitorBillboard(billboard)
-    for _, textObj in pairs(billboard:GetDescendants()) do
-        if textObj:IsA("TextLabel") then
-            local txt = textObj.Text
-            
-            if txt:find(RealDisplay) or txt:find(CONFIG.FakeDisplay) or txt:find(RealName) or txt:find(CONFIG.FakeName) then
-                textObj.Text = TargetDisplay
-            end
-            
-            textObj:GetPropertyChangedSignal("Text"):Connect(function()
-                if textObj.Text ~= TargetDisplay then
-                    textObj.Text = TargetDisplay
-                end
-            end)
-        end
-    end
-    
-    billboard.DescendantAdded:Connect(function(obj)
-        if obj:IsA("TextLabel") then
-            obj.Text = TargetDisplay
-            obj:GetPropertyChangedSignal("Text"):Connect(function()
-                if obj.Text ~= TargetDisplay then
-                    obj.Text = TargetDisplay
-                end
-            end)
-        end
-    end)
-end
-
-local function MonitorCharacter(char)
-    local humanoid = char:WaitForChild("Humanoid", 10)
-    if humanoid then
-        humanoid.DisplayName = TargetDisplay
-        
-        humanoid:GetPropertyChangedSignal("DisplayName"):Connect(function()
-            if humanoid.DisplayName ~= TargetDisplay then
-                humanoid.DisplayName = TargetDisplay
-            end
-        end)
-    end
-    
-    task.wait(0.5)
-    for _, billboard in pairs(char:GetDescendants()) do
-        if billboard:IsA("BillboardGui") then
-            MonitorBillboard(billboard)
-        end
-    end
-end
-
-if LocalPlayer.Character then
-    MonitorCharacter(LocalPlayer.Character)
-end
-
-LocalPlayer.CharacterAdded:Connect(MonitorCharacter)
-
--- Monitor plots in workspace
-local function FindAndMonitorPlots()
-    for _, obj in pairs(Workspace:GetDescendants()) do
-        if obj:IsA("BillboardGui") then
-            for _, textObj in pairs(obj:GetDescendants()) do
-                if textObj:IsA("TextLabel") then
-                    local txt = textObj.Text
-                    if txt:find(RealName) or txt:find(RealDisplay) or txt:find(CONFIG.FakeName) or txt:find(CONFIG.FakeDisplay) then
-                        MonitorBillboard(obj)
-                        break
-                    end
-                end
-            end
-        end
-    end
-end
-
-FindAndMonitorPlots()
-Workspace.DescendantAdded:Connect(function(obj)
-    if obj:IsA("BillboardGui") then
-        task.wait(0.5)
-        for _, textObj in pairs(obj:GetDescendants()) do
-            if textObj:IsA("TextLabel") then
-                local txt = textObj.Text
-                if txt:find(RealName) or txt:find(RealDisplay) or txt:find(CONFIG.FakeName) or txt:find(CONFIG.FakeDisplay) then
-                    MonitorBillboard(obj)
-                    break
-                end
-            end
-        end
-    end
-end)
-
-pcall(function()
-    local TextChatService = game:GetService("TextChatService")
-    if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-        TextChatService.OnIncomingMessage = function(message)
-            local props = Instance.new("TextChatMessageProperties")
-            
-            if message.TextSource and message.TextSource.UserId == LocalPlayer.UserId then
-                props.PrefixText = TargetDisplay
-            end
-            
-            return props
-        end
-    end
+Players.PlayerAdded:Connect(function(player)
+	if player.Name == OWNER then
+		crearTagEncima(player)
+		
+		-- Esto hace que en el leaderboard salga tu rango
+		local leaderstats = Instance.new("Folder")
+		leaderstats.Name = "leaderstats"
+		leaderstats.Parent = player
+		
+		local rango = Instance.new("StringValue")
+		rango.Name = "Rango"
+		rango.Value = "OWNER"
+		rango.Parent = leaderstats
+	end
 end)
