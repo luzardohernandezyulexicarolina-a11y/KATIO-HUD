@@ -71,7 +71,7 @@ local function crossLine()
 end
 
 -- UI
-local Window = SN:CreateWindow({ Title = "Katio Hub", Subtitle = "Auto throw" })
+local Window = SN:CreateWindow({ Title = "🇧🇷 Katio Hub", Subtitle = "Auto throw" })
 local Tab = Window:CreateTab({ Name = "INICIO" })
 local Section = Tab:CreateSection("Auto throw (max power)")
 local status = Tab:CreateLabel("Idle")
@@ -157,4 +157,4 @@ Section:CreateSlider({
 	Min = 0.4, Max = 2, Default = 0.8, Step = 0.1, Suffix = " s",
 	Callback = function(n) tapDelay = n end,
 })
--- powered by scriptnow.net
+-- powered by Katio.net
